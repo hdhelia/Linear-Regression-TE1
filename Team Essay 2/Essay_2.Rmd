@@ -83,7 +83,7 @@ ggplot(Life_Exp, aes(x = ICR, y = Life.expectancy)) +
 
 ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
   geom_point() +
-  stat_smooth() 
+  stat_smooth()
 ```
 
 
@@ -177,12 +177,20 @@ confint(model)
 data.frame('rse' = 4.767, 'r.squared' = 0.7377, 'f.statistic' = 2434, 'p.value' = '< 2.2e-16')
 ```
 
+```{r}
+# RSE calculation
+
+mean(Life_Exp$Life.expectancy)
+
+sigma(model)*100/mean(Life_Exp$Life.expectancy)
+```
+
 ## (5) CONCLUSION
 
 ### Summary
 
 ```{r}
-par(mfrow = c(2,2))
+# par(mfrow = c(2,2))
 plot(model)
 ```
 
