@@ -1,7 +1,7 @@
 ---
 title: "Essay 2: Multiple Linear Regression"
 author: "Dhruvi, Vi, Huy, Jesse, Harshal"
-date: "3/12/2021"
+date: "3/15/2021"
 output:
   html_document:
     df_print: paged
@@ -29,7 +29,7 @@ library("dplyr")
 
 **Name of the Data-set: Life Expectancy (WHO)**
 
-The data provides information on various factors (immunization, ecoconomic, mortality, social, and other health related factors) and their effect on the Life Expectancy  from years 2000 to 2015.
+The data provides information on various factors (immunization, economic, mortality, social, and other health related factors) and their effect on the Life Expectancy from years 2000 to 2015.
 The data is collected from 193 countries from WHO and UN website. 
 
 Our analysis utilizes the information on the following variables from the Dataset:
@@ -72,6 +72,13 @@ Life_Exp_test
 
 ### Visualization
 
++ Create scatter plots displaying the relationship between the outcome variable (Life expectancy) and each predictor variable:
+  - Life expectancy (y) vs. Adult Mortality
+  - Life expectancy (y) vs. Income composition of Resources
+  - Life expectancy (y) vs. Schooling
+
++ Add a smoothed line, using stat_smooth()
+
 ```{r}
 ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
   geom_point() +
@@ -86,16 +93,28 @@ ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
   stat_smooth()
 ```
 
+The graphs above suggest a 
+- linearly decreasing relationship between the **Life expectancy** and **Adult Mortality** variables. 
+- linearly increasing relationship between the **Life expectancy** and **ICR** variables. 
+- linearly increasing relationship between the **Life expectancy** and **Schooling** variables. 
 
+This is a good thing because one important assumption of the linear regression is that the relationship beween the outcome (Rate) and predictor variables (Year) is linear and additive.
+
+It's also possible to compute the correlation between the two variables using the R function **`cor()`**:
 
 ```{r}
-cor(Life_Exp$Life.expectancy, Life_Exp$Adult.Mortality)
-
-cor(Life_Exp$Life.expectancy, Life_Exp$ICR)
-
-cor(Life_Exp$Life.expectancy, Life_Exp$Schooling)
+data.frame(
+  'LE_AM' = cor(Life_Exp$Life.expectancy, Life_Exp$Adult.Mortality), 
+  'LE_ICR' = cor(Life_Exp$Life.expectancy, Life_Exp$ICR),
+  'LE_School' = cor(Life_Exp$Life.expectancy, Life_Exp$Schooling)
+  )
 ```
 
+The correlation coefficient measures the level of the association between two variables x and y. Its value ranges between -1 (perfect negative correlation: when x increases, y decreases) and +1 (perfect positive correlation: when x increases, y increases). A value closer to 0 suggests a weak relationship between the variables. 
+
+*In our data the correlation value between the Adult mortality, ICR, Schooling and Life expectancy is -0.6901876, 0.7248019, and 0.7526172 respectively which are closer to either -1 (adult mortality) and 1 (ICR, schooling) and suggests a decent correlation between our variables i.e the variation of the outcome (Life Expectancy) is explained to a good extent by the predictors.*
+
+Hence, we can continue building a linear model of y as a function of x1, x2, x3 (the 3 predictors).
 
 ## (3) ANALYSIS
 
