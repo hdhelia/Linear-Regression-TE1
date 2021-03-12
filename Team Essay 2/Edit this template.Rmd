@@ -180,6 +180,10 @@ ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
 In the previous sections, we came up with a linear regression model of Life Expectancy as a function of Adult Mortality, ICR and Schooling : 
 `Life.expectancy =  55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling`
 
+In our model, most of the data points fit our model, however, we also see few outliers that are present in our data set.
+
+We see that there is a negative correlation between the explanatory variable (Adult Mortality) and response variable (Life Expectancy). On the contrary, we find positive correlation for both other explanatory variables (ICR, Schooling) with respect to the response variable (Life Expectancy). 
+
 In the following sections, we will determine the quality of our linear model and determine whether the relationship between the explanatory variables and the response variable is significant. Along with that we will also check if the model we have built fits the data that we have used or not. 
 
 ### Model Summary
