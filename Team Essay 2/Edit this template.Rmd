@@ -46,7 +46,7 @@ Our analysis utilizes the information on the following variables from the Datase
 + Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
 + Number of years of Schooling (years)
 
-`We will study the effects of adult mortality rate, Income Composition of Resources (How productively resources are utilized in a country), and Schooling (years of schooling) on the life expectancy of an individual.`
+*We will study the effects of adult mortality rate, Income Composition of Resources (How productively resources are utilized in a country), and Schooling (years of schooling) on the life expectancy of an individual.*
 
 **Importing the data file**
 
@@ -72,9 +72,9 @@ rand_WHO_data <- WHO_data[rows, ] # this is the randomized data set with jumbled
 Life_Exp <- rand_WHO_data[1:2600, ] # Training data
 Life_Exp_test <- rand_WHO_data[2601:2768, ] # test data
 
-rand_WHO_data
-Life_Exp
-Life_Exp_test
+#rand_WHO_data
+#Life_Exp
+#Life_Exp_test
 ```
 
 ### Visualization
@@ -150,9 +150,9 @@ We find the estimated Life Expectancy in years (age) given by our model for the 
 # expectancy and also another to show the % difference between the expected values and the actual values.
 
 Life_Exp_test  %>% 
+  select(-("Country")) %>% 
   mutate("Expected.LifeExp" = 55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling) %>% 
   mutate("% difference" = ( (Expected.LifeExp - Life.expectancy)/Life.expectancy  ) * 100)
-  
 ```
   
 ## (4) MODEL EVALUATION
@@ -188,16 +188,30 @@ In the following sections, we will determine the quality of our linear model and
 
 ### Model Summary
 
+We start by displaying the statistical summary of the model using the R function `summary()`:
 
 ```{r}
 summary(model)
 ```
 
+The summary outputs shows 6 components, including:
+
++ **Call.** Shows the function call used to compute the regression model. 
+  + In this case, displaying rate on the y-axis and the predictor variables adult mortality, ICR and schooling on x-axis.
++ **Residuals.** Provide a quick view of the distribution of the residuals, which by definition have a mean zero. Therefore, the median should not be far from zero, and the minimum and maximum should be roughly equal in absolute value. 
+  + The minimum, median, and maximum are displayed as -24.1441, 0.2752, and 23.9416  respectively.
++ **Coefficients.** Shows the regression beta coefficients and their statistical significance. Predictor variables, that are significantly associated to the outcome variable, are marked by stars.
+  + The above table shows that all three variables have a statistical impact on life expectancy. It also proves that there is a strong positive relationship between Life Expectancy and ICR and positive and negative relationship with Schooling and Adult Mortality respectively.
++ **Residual standard error** (RSE), **R-squared** (R2) and the **F-statistic** are metrics that are used to check how well the model fits to our data.
+  + The RSE is 4.767 with 2596 degrees of freedom, R2 is 0.7377, R2-adjusted is 0.7374 and the F-statistic is 2434 on 3 and 2596 degrees of freedom. 
+  + If the p value is lower than 0.05, it indicates the variable is statistically significant. Our p-value for the F-statistic is < 2.2e-16 which is way smaller than 0.05 and indicates a highly significant relationship between, at least, one of the predictor variables and the outcome variable.
+  + Adjusted R-squared: Variance explained by the model. In your model, the model explained 74 percent of the variance of y. R squared is always between 0 and 1. The higher the better.
+
 ### Coefficients significance
 
 
-```{r, echo=FALSE}
-knitr::include_graphics("coefficients.JPG")
+```{r}
+summary(model)$coefficient
 ```
 
 
@@ -224,9 +238,9 @@ sigma(model)*100/mean(Life_Exp$Life.expectancy)
 
 ### Summary
 
-```{r}
-# par(mfrow = c(2,2))
-plot(model)
+```{r, echo=false}
+#plot(model)
+knitr::include_graphics("qqplot.png")
 ```
 
 
