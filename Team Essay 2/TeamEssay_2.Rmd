@@ -260,8 +260,8 @@ That is, there is approximately a 95% chance that the interval [8.995, 11.920] w
 That is, there is approximately a 95% chance that the interval [0.959, 1.145] will contain the true value of b1. Similarly the 95% confidence interval for b0 can be computed as **`b0 +/- 2*SE(b0)`**.
 
 
-+ the lower limits of `b1 = b0 - 2*SE(b0)` **=** `55.219 - 2*0.475` **=** `54.289`
-+ the upper limits of `b1 = b0 + 2*SE(b0)` **=** `55.219 + 2*0.475` **=** `56.169`
++ the lower limits of `b0 = b0 - 2*SE(b0)` **=** `55.219 - 2*0.475` **=** `54.289`
++ the upper limits of `b0 = b0 + 2*SE(b0)` **=** `55.219 + 2*0.475` **=** `56.169`
 
 There is approximately a 95% chance that the interval [54.289, 56.169] will contain the true value of b0.
 
