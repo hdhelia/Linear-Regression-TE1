@@ -209,10 +209,63 @@ The summary outputs shows 6 components, including:
 
 ### Coefficients significance
 
+The coefficients table, in the model statistical summary, shows:
+
++ the estimates of the **beta coefficients**
++ the **standard errors** (SE), which defines the accuracy of beta coefficients. For a given beta coefficient, the SE reflects how the coefficient varies under repeated sampling. It can be used to compute the confidence intervals and the t-statistic.
++ the **t-statistic** and the associated **p-value**, which defines the statistical significance of the beta coefficients.
+
 
 ```{r}
 summary(model)$coefficient
 ```
+**t-statistic and p-values**
+
+For a given predictor, the t-statistic (and its associated p-value) tests whether or not there is a statistically significant relationship between a given predictor and the outcome variable, that is whether or not the beta coefficient of the predictor is significantly different from zero.
+
+The statistical hypotheses are as follow:
+
++ Null hypothesis (H0): the coefficients are equal to zero (i.e., no relationship between x and y)
++ Alternative Hypothesis (Ha): the coefficients are not equal to zero (i.e., there is some relationship between x and y)
+
+Mathematically, for a given beta coefficient (b), the t-test is computed as **`t = (b - 0)/SE(b)`**, where SE(b) is the standard error of the coefficient b. The t-statistic measures the number of standard deviations that b is away from 0. Thus a large t-statistic will produce a small p-value.
+
+The higher the t-statistic (and the lower the p-value), the more significant the predictor. The symbols to the right visually specifies the level of significance. The line below the table shows the definition of these symbols; one star means 0.01 < p < 0.05. The more the stars beside the variable’s p-value, the more significant the variable.
+
+A statistically significant coefficient indicates that there is an association between the predictor (x) and the outcome (y) variable.
+
+*In our case, the p-values for the intercept and the 3 predictors variable are highly significant, so we can reject the null hypothesis and accept the alternative hypothesis, which means that there is a significant association between the predictor and the outcome variables.*
+
+Note: High t-statistics (which go with low p-values near 0) indicate that a predictor should be retained in a model, while very low t-statistics indicate a predictor could be dropped (P. Bruce and Bruce 2017).
+
+**Standard errors and confidence intervals**
+
+The standard error measures the variability/accuracy of the beta coefficients. it can be used to compute the confidence intervals of the coefficients. 
+
+For example, the 95% confidence interval for the coefficient b3 is defined as **`b3 +/- 2*SE(b3)`**, where:
+
++ the lower limits of `b3 = b3 - 2*SE(b3)` **=** `-0.031 - 2*0.0009` **=** `-0.0328`
++ the upper limits of `b3 = b3 + 2*SE(b3)` **=** `-0.031 + 2*0.0009` **=** `-0.0292`
+
+That is, there is approximately a 95% chance that the interval [-0.0328, -0.0292] will contain the true value of b3. Similarly the 95% confidence interval for b2 can be computed as **`b2 +/- 2*SE(b2)`**.
+
++ the lower limits of `b2 = b2 - 2*SE(b2)` **=** `10.457 - 2*0.746` **=** `8.995`
++ the upper limits of `b2 = b2 + 2*SE(b2)` **=** `273.416 + 2*0.746` **=** `11.920`
+
+That is, there is approximately a 95% chance that the interval [8.995, 11.920] will contain the true value of b2. Similarly the 95% confidence interval for b1 can be computed as **`b1 +/- 2*SE(b1)`**.
+
++ the lower limits of `b1 = b1 - 2*SE(b1)` **=** `1.053 - 2*0.047` **=** `0.959`
++ the upper limits of `b1 = b1 + 2*SE(b1)` **=** `1.053 + 2*0.047` **=** `1.145`
+
+That is, there is approximately a 95% chance that the interval [0.959, 1.145] will contain the true value of b1. Similarly the 95% confidence interval for b0 can be computed as **`b0 +/- 2*SE(b0)`**.
+
+
++ the lower limits of `b1 = b0 - 2*SE(b0)` **=** `55.219 - 2*0.475` **=** `54.289`
++ the upper limits of `b1 = b0 + 2*SE(b0)` **=** `55.219 + 2*0.475` **=** `56.169`
+
+There is approximately a 95% chance that the interval [54.289, 56.169] will contain the true value of b0.
+
+To get these information, simply type:
 
 
 ```{r}
@@ -221,10 +274,29 @@ confint(model)
 
 ### Model accuracy
 
+The overall quality of the linear regression fit can be assessed using the following three quantities, displayed in the model summary:
+
+1. The Residual Standard Error (RSE).
+2. The R-squared (R2)
+3. F-statistic
+
 
 ```{r, echo=FALSE}
 data.frame('rse' = 4.767, 'r.squared' = 0.7377, 'f.statistic' = 2434, 'p.value' = '< 2.2e-16')
 ```
+
+**1. The Residual Standard Error (RSE)**
+
+The RSE (also known as the model sigma) is the residual variation, representing the average variation of the observations points around the fitted regression line. This is the standard deviation of residual errors.
+
+RSE provides an absolute measure of patterns in the data that can’t be explained by the model.
+
+Dividing the RSE by the average value of the outcome variable will give you the prediction error rate, which should be as small as possible.
+
+In our example, RSE = 4.767, meaning that the observed life expectancy (per 100k population) deviates from the true regression line by approximately 4.767 units in average.
+
+Whether or not an RSE of 4.767 units is an acceptable prediction error is subjective and depends on the problem context. However, we can calculate the percentage error. In our data set, the mean value of life expectancy is 69.32612, and so the percentage error is 4.767/69.32612 = 6.875%.
+
 
 ```{r}
 # RSE calculation
@@ -233,6 +305,29 @@ mean(Life_Exp$Life.expectancy)
 
 sigma(model)*100/mean(Life_Exp$Life.expectancy)
 ```
+
+**2. R-squared and adjusted R-squared**
+
+The R-squared (R2) ranges from 0 to 1 and represents the proportion of information (i.e. variation) in the data that can be explained by the model. The adjusted R-squared adjusts for the degrees of freedom.
+
+The R2 measures, how well the model fits the data.
+
+A high value of R2 is a good indication. However, as the value of R2 tends to increase when more predictors are added in the model, such as in multiple linear regression model, you should mainly consider the adjusted R-squared, which is a penalized R2 for a higher number of predictors.
+
++ An (adjusted) R2 that is close to 1 indicates that a large proportion of the variability in the outcome has been explained by the regression model.
++ A number near 0 indicates that the regression model did not explain much of the variability in the outcome.
+
+*In our model the R2 value is 0.7377 and the Adjusted R2 value is 0.7374 which are both closer to one and considerably high, meaning that a lot of the variability in the outcome has been explained by our model.*
+
+**3. F-statistic**
+
+The F-statistic gives the overall significance of the model. It assess whether at least one predictor variable has a non-zero coefficient.
+
+As this is not a simple linear regression, this test will provide a significant information about the model that we have calculated to the overall mean of data. We calculate F-statistic with the formula: F-statistic = (MSr/k)/(MSe/(n-k-1)) = (MSr/3)/(MSe/(2596)) = 2434.
+
+A large F-statistic will corresponds to a statistically significant p-value (p < 0.05). 
+
+*In our model, the F-statistic equals 2434 producing a p-value of 2.2e-16. This means that, at least, one of the predictor variables is significantly related to the outcome variable.*
 
 ## (5) CONCLUSION
 
