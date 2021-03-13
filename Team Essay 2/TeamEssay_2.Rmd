@@ -3,10 +3,10 @@ title: "Essay 2: Multiple Linear Regression"
 author: "Dhruvi, Vi, Huy, Jesse, Harshal"
 date: "3/15/2021"
 output:
-  html_notebook: default
   pdf_document: default
   html_document:
     df_print: paged
+  html_notebook: default
 ---
 ## (1) INTRODUCTION
 
@@ -15,10 +15,12 @@ output:
 Multiple linear regression: `y = b0 + b1*x1 + b2*x2 + b3*x3 + e` where:
 
 + *x1*, *x2*, *x3* are explanatory variables.
-+ **b0**, **b1**, **b2** and **b3** are known as the regression *beta* coeefficients or *parameters*:
++ **b0**, **b1**, **b2** and **b3** are known as the regression *beta* coefficients or *parameters*:
   + *b0* is the intercept of regression line: predicted value when *x = 0*.
   + *b1*, *b2*, *b3* are the slope coefficients for each explanatory variables.
 + *e* is the error term, the part of y that can be explained through the regression model.
+
+Note: Beta coefficients measure the association between the predictor variable and the outcome. “b_j” can be interpreted as the average effect on y of a one unit increase in “x_j”, holding all other predictors fixed.
 
 ### Loading R packages
 
@@ -28,6 +30,7 @@ library("tidyverse") #for data manipulation and visualization
 library("broom")
 library("modelr")
 library("dplyr")
+library("ggpubr")
 ```
 
 ## (2) DATA DESCRIPTION
@@ -56,7 +59,8 @@ Next, since the dataset has some NA values, we omit the rows containing NA value
 ```{r, echo=TRUE, results='hide'}
 WHO_data <- read.csv("LifeExpectancyData.csv")
 
-WHO_data <- WHO_data[ , c("Country", "Life.expectancy", "Adult.Mortality", "Income.composition.of.resources", "Schooling")] %>% 
+WHO_data <- WHO_data[ , 
+  c("Country", "Life.expectancy", "Adult.Mortality", "Income.composition.of.resources", "Schooling")] %>% 
   rename(
     "ICR" = "Income.composition.of.resources"
     )
@@ -64,7 +68,8 @@ WHO_data <- WHO_data[ , c("Country", "Life.expectancy", "Adult.Mortality", "Inco
 # omit the rows containing any NA values.
 WHO_data <- na.omit(WHO_data)
 
-#randomize the rows so the model isn't specific to a few countries since we create a training and testing subset.
+# randomize the rows so the model isn't specific to a few countries since we create 
+# a training and testing subset.
 set.seed(42)
 rows <- sample(nrow(WHO_data)) 
 rand_WHO_data <- WHO_data[rows, ] # this is the randomized data set with jumbled rows
@@ -80,24 +85,27 @@ Life_Exp_test <- rand_WHO_data[2601:2768, ] # test data
 ### Visualization
 
 + Create scatter plots displaying the relationship between the outcome variable (Life expectancy) and each predictor variable:
-  - Life expectancy (y) vs. Adult Mortality
-  - Life expectancy (y) vs. Income composition of Resources
-  - Life expectancy (y) vs. Schooling
+  + Life expectancy (y) vs. Adult Mortality
+  + Life expectancy (y) vs. Income composition of Resources
+  + Life expectancy (y) vs. Schooling
 
 + Add a smoothed line, using stat_smooth()
 
-```{r}
-ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
+```{r, warning=FALSE, message=FALSE}
+AM <- ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
   geom_point() +
   stat_smooth() 
 
-ggplot(Life_Exp, aes(x = ICR, y = Life.expectancy)) +
+ICR <- ggplot(Life_Exp, aes(x = ICR, y = Life.expectancy)) +
   geom_point() +
   stat_smooth() 
 
-ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
+Sch <- ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
   geom_point() +
   stat_smooth()
+
+ggarrange(AM, ICR, Sch, 
+          ncol = 3, nrow = 1)
 ```
 
 The graphs above suggest a 
@@ -105,7 +113,7 @@ The graphs above suggest a
 - linearly increasing relationship between the **Life expectancy** and **ICR** variables. 
 - linearly increasing relationship between the **Life expectancy** and **Schooling** variables. 
 
-This is a good thing because one important assumption of the linear regression is that the relationship beween the outcome (Rate) and predictor variables (Year) is linear and additive.
+This is a good thing because one important assumption of the linear regression is that the relationship beween the outcome (life exp.) and predictor variables is linear and additive.
 
 It's also possible to compute the correlation between the two variables using the R function **`cor()`**:
 
@@ -145,14 +153,19 @@ We find the estimated Life Expectancy in years (age) given by our model for the 
 
 **Life Expectancy Data**
 
-```{r}
-# calculate the estimated life expectancy for the test data based on our model. Created a new column that shoes the model calculated 
-# expectancy and also another to show the % difference between the expected values and the actual values.
+```{r, echo=TRUE, results='hide'}
+# calculate the estimated life expectancy for the test data based on our model. 
+# Created a new column that shows the model calculated 
+# expectancy and also another to show the % difference between the expected values 
+# and the actual values.
 
 Life_Exp_test  %>% 
   select(-("Country")) %>% 
-  mutate("Expected.LifeExp" = 55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling) %>% 
-  mutate("% difference" = ( (Expected.LifeExp - Life.expectancy)/Life.expectancy  ) * 100)
+  mutate("Expected.LifeExp" = 55.21856 + 
+           (-0.03102) * Adult.Mortality +
+           (10.45743) * ICR + 
+           1.05254 * Schooling) %>% 
+  mutate("% difference" = ( (Expected.LifeExp - Life.expectancy)/Life.expectancy) * 100)
 ```
   
 ## (4) MODEL EVALUATION
@@ -161,18 +174,21 @@ Life_Exp_test  %>%
 
 In the scatter plots below, we plot the fitted regression line for each of the explanatory variables (Adult Mortality, ICR, Schooling) against the response variable (Life Expectancy). The fitted regression lines are surrounded by confidence intervals around it that reflects the uncertainty around the line. 
 
-```{r}
-ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
+```{r, warning=FALSE, message=FALSE}
+am <- ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
   geom_point() +
   stat_smooth(method = lm) 
 
-ggplot(Life_Exp, aes(x = ICR, y = Life.expectancy)) +
+icr <- ggplot(Life_Exp, aes(x = ICR, y = Life.expectancy)) +
   geom_point() +
   stat_smooth(method = lm) 
 
-ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
+sch <- ggplot(Life_Exp, aes(x = Schooling, y = Life.expectancy)) +
   geom_point() +
   stat_smooth(method = lm) 
+
+ggarrange(am, icr, sch, 
+          ncol = 3, nrow = 1)
 ```
 
 ### Model Assessment 
@@ -198,14 +214,13 @@ The summary outputs shows 6 components, including:
 
 + **Call.** Shows the function call used to compute the regression model. 
   + In this case, displaying rate on the y-axis and the predictor variables adult mortality, ICR and schooling on x-axis.
-+ **Residuals.** Provide a quick view of the distribution of the residuals, which by definition have a mean zero. Therefore, the median should not be far from zero, and the minimum and maximum should be roughly equal in absolute value. 
-  + The minimum, median, and maximum are displayed as -24.1441, 0.2752, and 23.9416  respectively.
++ **Residuals.** Provide a quick view of the distribution of the residuals, which by definition have a mean zero. Therefore, the median (0.2752) should not be far from zero, and the minimum (-24.1441) and maximum (23.9416) should be roughly equal in absolute value. 
 + **Coefficients.** Shows the regression beta coefficients and their statistical significance. Predictor variables, that are significantly associated to the outcome variable, are marked by stars.
-  + The above table shows that all three variables have a statistical impact on life expectancy. It also proves that there is a strong positive relationship between Life Expectancy and ICR and positive and negative relationship with Schooling and Adult Mortality respectively.
+  + The above table shows that all three variables have a statistical impact on life expectancy.
+  + It also proves that there is a **strong positive relationship** between **Life Expectancy** and **ICR** and positive and negative relationship with Schooling and Adult Mortality respectively.
 + **Residual standard error** (RSE), **R-squared** (R2) and the **F-statistic** are metrics that are used to check how well the model fits to our data.
   + The RSE is 4.767 with 2596 degrees of freedom, R2 is 0.7377, R2-adjusted is 0.7374 and the F-statistic is 2434 on 3 and 2596 degrees of freedom. 
-  + If the p value is lower than 0.05, it indicates the variable is statistically significant. Our p-value for the F-statistic is < 2.2e-16 which is way smaller than 0.05 and indicates a highly significant relationship between, at least, one of the predictor variables and the outcome variable.
-  + Adjusted R-squared: Variance explained by the model. In your model, the model explained 74 percent of the variance of y. R squared is always between 0 and 1. The higher the better.
+  + If the p value is lower than 0.05, it indicates the variable is statistically significant. Our p-value for the F-statistic is < 2.2e-16 which is way smaller than 0.05.
 
 ### Coefficients significance
 
@@ -219,6 +234,16 @@ The coefficients table, in the model statistical summary, shows:
 ```{r}
 summary(model)$coefficient
 ```
+**Beta coefficients**
+
+For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
+
+For example, for a fixed amount of ICR and # years of schooling, an adult mortality rate of 100 (per 1k population) leads to a decrease in life expectancy by approximately -0.031*1000 = 31 units, on average.
+
+The ICR coefficient suggests that for every 0.10 unit increase in the Human dev index, holding all other predictors constant, we can expect an increase of 10.457*0.10 = 1.05 years in life expectancy, on average.
+
+The Schooling coefficient suggests that for every 5 years of schooling, holding all other predictors constant, we can expect an increase of 1.0525*5 = 5.26 years in life expectancy, on average.
+
 **t-statistic and p-values**
 
 For a given predictor, the t-statistic (and its associated p-value) tests whether or not there is a statistically significant relationship between a given predictor and the outcome variable, that is whether or not the beta coefficient of the predictor is significantly different from zero.
@@ -234,7 +259,7 @@ The higher the t-statistic (and the lower the p-value), the more significant the
 
 A statistically significant coefficient indicates that there is an association between the predictor (x) and the outcome (y) variable.
 
-*In our case, the p-values for the intercept and the 3 predictors variable are highly significant, so we can reject the null hypothesis and accept the alternative hypothesis, which means that there is a significant association between the predictor and the outcome variables.*
+*In our case, the p-values (<2e-16) for the intercept and the 3 predictors variable are highly significant, so we can reject the null hypothesis and accept the alternative hypothesis, which means that there is a significant association between the predictors and the outcome variables.*
 
 Note: High t-statistics (which go with low p-values near 0) indicate that a predictor should be retained in a model, while very low t-statistics indicate a predictor could be dropped (P. Bruce and Bruce 2017).
 
@@ -242,17 +267,17 @@ Note: High t-statistics (which go with low p-values near 0) indicate that a pred
 
 The standard error measures the variability/accuracy of the beta coefficients. it can be used to compute the confidence intervals of the coefficients. 
 
-For example, the 95% confidence interval for the coefficient b3 is defined as **`b3 +/- 2*SE(b3)`**, where:
+For example, the 95% confidence interval for the coefficient b3 (Adult mortality) is defined as **`b3 +/- 2*SE(b3)`**, where:
 
 + the lower limits of `b3 = b3 - 2*SE(b3)` **=** `-0.031 - 2*0.0009` **=** `-0.0328`
 + the upper limits of `b3 = b3 + 2*SE(b3)` **=** `-0.031 + 2*0.0009` **=** `-0.0292`
 
-That is, there is approximately a 95% chance that the interval [-0.0328, -0.0292] will contain the true value of b3. Similarly the 95% confidence interval for b2 can be computed as **`b2 +/- 2*SE(b2)`**.
+That is, there is approximately a 95% chance that the interval [-0.0328, -0.0292] will contain the true value of b3. Similarly the 95% confidence interval for b2 (ICR) can be computed as **`b2 +/- 2*SE(b2)`**.
 
 + the lower limits of `b2 = b2 - 2*SE(b2)` **=** `10.457 - 2*0.746` **=** `8.995`
 + the upper limits of `b2 = b2 + 2*SE(b2)` **=** `273.416 + 2*0.746` **=** `11.920`
 
-That is, there is approximately a 95% chance that the interval [8.995, 11.920] will contain the true value of b2. Similarly the 95% confidence interval for b1 can be computed as **`b1 +/- 2*SE(b1)`**.
+That is, there is approximately a 95% chance that the interval [8.995, 11.920] will contain the true value of b2. Similarly the 95% confidence interval for b1 (SChooling) can be computed as **`b1 +/- 2*SE(b1)`**.
 
 + the lower limits of `b1 = b1 - 2*SE(b1)` **=** `1.053 - 2*0.047` **=** `0.959`
 + the upper limits of `b1 = b1 + 2*SE(b1)` **=** `1.053 + 2*0.047` **=** `1.145`
@@ -289,35 +314,33 @@ data.frame('rse' = 4.767, 'r.squared' = 0.7377, 'f.statistic' = 2434, 'p.value' 
 
 The RSE (also known as the model sigma) is the residual variation, representing the average variation of the observations points around the fitted regression line. This is the standard deviation of residual errors.
 
-RSE provides an absolute measure of patterns in the data that can’t be explained by the model.
+The RSE estimate gives a measure of error of prediction. The lower the RSE, the more accurate the model (on the data in hand).
 
 Dividing the RSE by the average value of the outcome variable will give you the prediction error rate, which should be as small as possible.
 
-In our example, RSE = 4.767, meaning that the observed life expectancy (per 100k population) deviates from the true regression line by approximately 4.767 units in average.
+In our example, RSE = 4.767, meaning that the observed life expectancy deviates from the true regression line by approximately 4.767 years of age in average.
 
 Whether or not an RSE of 4.767 units is an acceptable prediction error is subjective and depends on the problem context. However, we can calculate the percentage error. In our data set, the mean value of life expectancy is 69.32612, and so the percentage error is 4.767/69.32612 = 6.875%.
 
-
 ```{r}
 # RSE calculation
-
-mean(Life_Exp$Life.expectancy)
-
 sigma(model)*100/mean(Life_Exp$Life.expectancy)
 ```
 
+*In our multiple regression example, the RSE is 4.767 corresponding to 6.9% error rate.*
+
 **2. R-squared and adjusted R-squared**
 
-The R-squared (R2) ranges from 0 to 1 and represents the proportion of information (i.e. variation) in the data that can be explained by the model. The adjusted R-squared adjusts for the degrees of freedom.
+In multiple linear regression, the R2 represents the correlation coefficient between the observed values of the outcome variable (y) and the fitted (i.e., predicted) values of y. For this reason, the value of R will always be positive and will range from 0 to 1.
 
-The R2 measures, how well the model fits the data.
+The R2 measures how well the model fits the data.
 
 A high value of R2 is a good indication. However, as the value of R2 tends to increase when more predictors are added in the model, such as in multiple linear regression model, you should mainly consider the adjusted R-squared, which is a penalized R2 for a higher number of predictors.
 
 + An (adjusted) R2 that is close to 1 indicates that a large proportion of the variability in the outcome has been explained by the regression model.
 + A number near 0 indicates that the regression model did not explain much of the variability in the outcome.
 
-*In our model the R2 value is 0.7377 and the Adjusted R2 value is 0.7374 which are both closer to one and considerably high, meaning that a lot of the variability in the outcome has been explained by our model.*
+*In our model the Adjusted R2 value is 0.7374 meaning that 74% of the variance in the measure of life expectancy can be predicted by adult mortality rate, ICR and Schooling status.*
 
 **3. F-statistic**
 
@@ -333,7 +356,7 @@ A large F-statistic will corresponds to a statistically significant p-value (p <
 
 ### Summary
 
-```{r, echo=false}
+```{r, echo = FALSE}
 #plot(model)
 knitr::include_graphics("qqplot.png")
 ```
