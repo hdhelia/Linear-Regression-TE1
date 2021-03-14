@@ -356,11 +356,20 @@ A large F-statistic will corresponds to a statistically significant p-value (p <
 
 ### Summary
 
+After computing a multiple linear regression model, we find that our predictors (adult mortality, income composition of resources, schooling) are significantly associated with outcome variable (Life Expectancy in age).
+
+Next we assess how well the model fits the data by inspecting the Residuals Standard Error (RSE), the R2 value and the F-statistics. These metrics give the overall quality of the model.
+
++ RSE:  our RSE value = 4.767, which is an acceptible value compared to the mean value of life expectancy
++ R-Squared: Higher the better -> our adjusted R2 value is 0.7374 which closer to 1 and relatively high
++ F-statistic: Higher the better -> our F statistic value is 2434 which is very high and our p-value (2.2e-16) is relatively significant.
+
 ```{r, echo = FALSE}
 #plot(model)
 knitr::include_graphics("qqplot.png")
 ```
-
+Furthermore, if you look at the qqplot produced above, we see that the errors/residuals are normally distributed in our model because the expected residual data points generally falls on the diagonal line with no strong deviations.
+This suggests that out linear regression model is the best fit for our data. 
 
 ## (6) REFERENCES
 
