@@ -60,7 +60,8 @@ Next, since the dataset has some NA values, we omit the rows containing NA value
 WHO_data <- read.csv("LifeExpectancyData.csv")
 
 WHO_data <- WHO_data[ , 
-  c("Country", "Life.expectancy", "Adult.Mortality", "Income.composition.of.resources", "Schooling")] %>% 
+  c("Country", "Life.expectancy", "Adult.Mortality", 
+    "Income.composition.of.resources", "Schooling")] %>% 
   rename(
     "ICR" = "Income.composition.of.resources"
     )
@@ -85,10 +86,6 @@ Life_Exp_test <- rand_WHO_data[2601:2768, ] # test data
 ### Visualization
 
 + Create scatter plots displaying the relationship between the outcome variable (Life expectancy) and each predictor variable:
-  + Life expectancy (y) vs. Adult Mortality
-  + Life expectancy (y) vs. Income composition of Resources
-  + Life expectancy (y) vs. Schooling
-
 + Add a smoothed line, using stat_smooth()
 
 ```{r, warning=FALSE, message=FALSE}
@@ -111,7 +108,8 @@ ggarrange(AM, ICR, Sch,
 The graphs above suggest a 
 - linearly decreasing relationship between the **Life expectancy** and **Adult Mortality** variables. 
 - linearly increasing relationship between the **Life expectancy** and **ICR** variables. 
-- linearly increasing relationship between the **Life expectancy** and **Schooling** variables. 
+- linearly increasing relationship between the **Life expectancy** and **Schooling** variables
+past a certain point.
 
 This is a good thing because one important assumption of the linear regression is that the relationship beween the outcome (life exp.) and predictor variables is linear and additive.
 
@@ -152,7 +150,7 @@ This result shows the intercept (b0) and the beta coefficients (b1, b2, b3) for 
 
 The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor variables are significant in relation to Life Expectancy; in this case, they are, so all three of our initial predictor variables will stay in the model. See the section on t-statistic and p-values for a detailed explanation of this.
 
-The intercept b0 = 55.21856 represents the predicted value if all variables equal zero; if **Adult Mortality**, **ICR**, and **Schooling** are all zero, the model predicts that the Life Expectancy is 55.21 years, on avarage. 
+The intercept b0 = 55.21856 represents the predicted value if all variables equal zero; if **Adult Mortality**, **ICR**, and **Schooling** are all zero, the model predicts that the Life Expectancy is 55.21 years, on average. 
 
 For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
 
@@ -183,7 +181,13 @@ Life_Exp_test  %>%
            1.05254 * Schooling) %>% 
   mutate("% difference" = ( (Expected.LifeExp - Life.expectancy)/Life.expectancy) * 100)
 ```
-  
+
+```{r, echo = FALSE}
+knitr::include_graphics("estimates.JPG")
+```
+
+If you take a look at the % difference between the expected and actual life expectancy some of them have a extremely high difference. This is due to the fact that we created out model based on the values for all countries all over the world from underdeveloped to developing to developed countries. Thee unerdeveloped countries may have extremely high or low values for some of the variables which creates a huge difference in the expected and actual values.
+
 ## (4) MODEL EVALUATION
 
 ### Regression line
@@ -212,7 +216,7 @@ ggarrange(am, icr, sch,
 In the previous sections, we came up with a linear regression model of Life Expectancy as a function of Adult Mortality, ICR and Schooling : 
 `Life.expectancy =  55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling`
 
-In our model, most of the data points fit our model, however, we also see few outliers that are present in our data set.
+In our model, most of the data points fit our model, however, we also see few outliers present in our data set.
 
 We see that there is a negative correlation between the explanatory variable (Adult Mortality) and response variable (Life Expectancy). On the contrary, we find positive correlation for both other explanatory variables (ICR, Schooling) with respect to the response variable (Life Expectancy). 
 
@@ -235,8 +239,7 @@ The summary outputs shows 6 components, including:
   + The above table shows that all three variables have a statistical impact on life expectancy.
   + It also proves that there is a **strong positive relationship** between **Life Expectancy** and **ICR** and positive and negative relationship with Schooling and Adult Mortality respectively.
 + **Residual standard error** (RSE), **R-squared** (R2) and the **F-statistic** are metrics that are used to check how well the model fits to our data.
-  + The RSE is 4.767 with 2596 degrees of freedom, R2 is 0.7377, R2-adjusted is 0.7374 and the F-statistic is 2434 on 3 and 2596 degrees of freedom. 
-  + If the p value is lower than 0.05, it indicates the variable is statistically significant. Our p-value for the F-statistic is < 2.2e-16 which is way smaller than 0.05.
+  + The RSE is 4.767 with 2596 degrees of freedom, R2 is 0.7377, R2-adjusted is 0.7374 and the F-statistic is 2434 on 3 and 2596 degrees of freedom. Our p-value is <2.2e-16. 
 
 ### Coefficients significance
 
@@ -258,13 +261,13 @@ For example, for a fixed amount of ICR and # years of schooling, an adult mortal
 
 The ICR coefficient suggests that for every 0.10 unit increase in the Human dev index, holding all other predictors constant, we can expect an increase of 10.457*0.10 = 1.05 years in life expectancy, on average.
 
-The Schooling coefficient suggests that for every 5 years of schooling, holding all other predictors constant, we can expect an increase of 1.0525*5 = 5.26 years in life expectancy, on average.
+The Schooling coefficient suggests that for ever year of schooling, holding all other predictors constant, we can expect an increase of 1.0525 years in life expectancy, on average.
 
 **t-statistic and p-values**
 
 For a given predictor, the t-statistic (and its associated p-value) tests whether or not there is a statistically significant relationship between a given predictor and the outcome variable, that is whether or not the beta coefficient of the predictor is significantly different from zero.
 
-The statistical hypotheses are as follow:
+The statistical hypotheses are as follows:
 
 + Null hypothesis (H0): the coefficients are equal to zero (i.e., no relationship between x and y)
 + Alternative Hypothesis (Ha): the coefficients are not equal to zero (i.e., there is some relationship between x and y)
@@ -272,8 +275,6 @@ The statistical hypotheses are as follow:
 Mathematically, for a given beta coefficient (b), the t-test is computed as **`t = (b - 0)/SE(b)`**, where SE(b) is the standard error of the coefficient b. The t-statistic measures the number of standard deviations that b is away from 0. Thus a large t-statistic will produce a small p-value.
 
 The higher the t-statistic (and the lower the p-value), the more significant the predictor. The symbols to the right visually specifies the level of significance. The line below the table shows the definition of these symbols; one star means 0.01 < p < 0.05. The more the stars beside the variable’s p-value, the more significant the variable.
-
-A statistically significant coefficient indicates that there is an association between the predictor (x) and the outcome (y) variable.
 
 *In our case, the p-values (<2e-16) for the intercept and the 3 predictors variable are highly significant, so we can reject the null hypothesis and accept the alternative hypothesis, which means that there is a significant association between the predictors and the outcome variables.*
 
@@ -306,8 +307,7 @@ That is, there is approximately a 95% chance that the interval [0.959, 1.145] wi
 
 There is approximately a 95% chance that the interval [54.289, 56.169] will contain the true value of b0.
 
-To get these information, simply type:
-
+To get this information, simply type:
 
 ```{r}
 confint(model)
@@ -376,16 +376,17 @@ After computing a multiple linear regression model, we find that our predictors 
 
 Next we assess how well the model fits the data by inspecting the Residuals Standard Error (RSE), the R2 value and the F-statistics. These metrics give the overall quality of the model.
 
-+ RSE:  our RSE value = 4.767, which is an acceptible value compared to the mean value of life expectancy
-+ R-Squared: Higher the better -> our adjusted R2 value is 0.7374 which closer to 1 and relatively high
++ RSE:  our RSE value = 4.767, which, ideally, we would like to be smaller however, given the different development status of the countries this is a decent measure.
++ R-Squared: Higher the better -> our adjusted R2 value is 0.7374 which closer to 1 and relatively high.
 + F-statistic: Higher the better -> our F statistic value is 2434 which is very high and our p-value (2.2e-16) is relatively significant.
 
 ```{r, echo = FALSE}
 #plot(model)
 knitr::include_graphics("qqplot.png")
 ```
-Furthermore, if you look at the qqplot produced above, we see that the errors/residuals are normally distributed in our model because the expected residual data points generally falls on the diagonal line with no strong deviations.
-This suggests that out linear regression model is the best fit for our data. 
+
+Furthermore, if you look at the qqplot produced above, we see that the errors/residuals are normally distributed in the center of our model because the expected residual data points generally falls on the diagonal line with no strong deviations; however, the tails are extensively deviated from the normalized line and show a huge variance. This suggests that our model may not be the best fit aand requires further assessment and imporvement to fit the data better.
+This behavior can be explained through the varying development status of the various countries in addition to the fact that we only considered a few variables of the many that contribute to the life expectancy measure. Some countries might have great measures for the mortality, schooling and ICR however lack the others that we didn't consider; meanwhile, the others with low measures of our predictor variables might make up this variance through other factors which we didn't consider. There are various reasons as to why this bias exists, some of which listed above, that need to be taken into consideration when trying to fit a model to our dataset.
 
 ## (6) REFERENCES
 
