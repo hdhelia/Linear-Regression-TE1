@@ -251,7 +251,7 @@ summary(model)$coefficient
 
 For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
 
-For example, for a fixed amount of ICR and # years of schooling, an adult mortality rate of 100 (per 1k population) leads to a decrease in life expectancy by approximately -0.031*1000 = 31 units, on average.
+For example, for a fixed amount of ICR and # years of schooling, an adult mortality rate of 100 (per 1k population) leads to a decrease in life expectancy by approximately -0.031*100 = 3.1 years, on average.
 
 The ICR coefficient suggests that for every 0.10 unit increase in the Human dev index, holding all other predictors constant, we can expect an increase of 10.457*0.10 = 1.05 years in life expectancy, on average.
 
