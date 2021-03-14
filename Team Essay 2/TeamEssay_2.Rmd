@@ -143,13 +143,14 @@ The **`lm()`** function is used to determine the beta coefficients for the linea
 model <- lm(Life.expectancy ~ Adult.Mortality + ICR + Schooling, data = Life_Exp)
 model
 ```
+
 This result shows the intercept (b0) and the beta coefficients (b1, b2, b3) for the **Adult Mortality**, **ICR**, and **Schooling** variables.
 
 ### Interpretation of Model
 
 + Model: `Life.expectancy =  55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling`
 
-The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor values are significant in relation to Life Expectancy; in this case, they are. See the section on t-statistic and p-values for a detailed explanation of this.
+The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor variables are significant in relation to Life Expectancy; in this case, they are, so all three of our initial predictor variables will stay in the model. See the section on t-statistic and p-values for a detailed explanation of this.
 
 For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
 
