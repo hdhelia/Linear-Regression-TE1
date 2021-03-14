@@ -85,9 +85,6 @@ Life_Exp_test <- rand_WHO_data[2601:2768, ] # test data
 
 ### Visualization
 
-+ Create scatter plots displaying the relationship between the outcome variable (Life expectancy) and each predictor variable:
-+ Add a smoothed line, using stat_smooth()
-
 ```{r, warning=FALSE, message=FALSE}
 AM <- ggplot(Life_Exp, aes(x = Adult.Mortality, y = Life.expectancy)) +
   geom_point() +
@@ -106,9 +103,9 @@ ggarrange(AM, ICR, Sch,
 ```
 
 The graphs above suggest a 
-- linearly decreasing relationship between the **Life expectancy** and **Adult Mortality** variables. 
-- linearly increasing relationship between the **Life expectancy** and **ICR** variables. 
-- linearly increasing relationship between the **Life expectancy** and **Schooling** variables
++ linearly decreasing relationship between the **Life expectancy** and **Adult Mortality** variables
++ linearly increasing relationship between the **Life expectancy** and **ICR** variables 
++ linearly increasing relationship between the **Life expectancy** and **Schooling** variables
 past a certain point.
 
 This is a good thing because one important assumption of the linear regression is that the relationship beween the outcome (life exp.) and predictor variables is linear and additive.
