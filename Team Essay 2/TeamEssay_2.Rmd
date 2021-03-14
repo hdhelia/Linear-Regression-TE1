@@ -155,6 +155,7 @@ The intercept b0 = 55.21856 represents the predicted value if all variables equa
 For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
 
 For example:
+
 + if Adult Mortality and ICR are fixed, 10 years of Schooling leads to an increase in Life Expectancy by approximately 1.05254*10 = 10.52 years, on average.
 + if Adult Mortality and Schooling are fixed, 0.20 increase in the Human Dev index leads to an increase in Life Expectancy by approximately 10.457*0.10 = 2.10 years, on average. 
 + if ICR and Schooling are fixed, an Adult Mortality rate of 100, per 1k population, leads to a decrease in Life Expectancy by approximately -0.031*100 = -3.1 years, on average.
@@ -386,6 +387,7 @@ knitr::include_graphics("qqplot.png")
 ```
 
 Furthermore, if you look at the qqplot produced above, we see that the errors/residuals are normally distributed in the center of our model because the expected residual data points generally falls on the diagonal line with no strong deviations; however, the tails are extensively deviated from the normalized line and show a huge variance. This suggests that our model may not be the best fit aand requires further assessment and imporvement to fit the data better.
+
 This behavior can be explained through the varying development status of the various countries in addition to the fact that we only considered a few variables of the many that contribute to the life expectancy measure. Some countries might have great measures for the mortality, schooling and ICR however lack the others that we didn't consider; meanwhile, the others with low measures of our predictor variables might make up this variance through other factors which we didn't consider. There are various reasons as to why this bias exists, some of which listed above, that need to be taken into consideration when trying to fit a model to our dataset.
 
 ## (6) REFERENCES
