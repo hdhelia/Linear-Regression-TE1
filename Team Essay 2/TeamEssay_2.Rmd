@@ -3,9 +3,9 @@ title: "Essay 2: Multiple Linear Regression"
 author: "Dhruvi, Vi, Huy, Jesse, Harshal"
 date: "3/15/2021"
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
   html_notebook: default
 ---
 ## (1) INTRODUCTION
@@ -103,6 +103,7 @@ ggarrange(AM, ICR, Sch,
 ```
 
 The graphs above suggest a 
+
 + linearly decreasing relationship between the **Life expectancy** and **Adult Mortality** variables
 + linearly increasing relationship between the **Life expectancy** and **ICR** variables 
 + linearly increasing relationship between the **Life expectancy** and **Schooling** variables
