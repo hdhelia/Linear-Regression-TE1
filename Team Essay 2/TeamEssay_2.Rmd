@@ -158,8 +158,8 @@ For a given predictor variable, the coefficient (b) can be interpreted as the av
 
 For example:
 + if Adult Mortality and ICR are fixed, 10 years of Schooling leads to an increase in Life Expectancy by approximately 1.05254*10 = 10.52 years, on average.
-+ if Adult Mortality and Schooling are fixed, 0.20 increase in the Human Dev index leads to an increase in Life Expectancy by approximately 10.457*0.10 = 2.10 years in life expectancy, on average. 
-+ if ICR and Schooling are fixed, an adult mortality rate of 100, per 1k population, leads to a decrease in Life Expectancy by approximately -0.031*100 = -3.1 years, on average.
++ if Adult Mortality and Schooling are fixed, 0.20 increase in the Human Dev index leads to an increase in Life Expectancy by approximately 10.457*0.10 = 2.10 years, on average. 
++ if ICR and Schooling are fixed, an Adult Mortality rate of 100, per 1k population, leads to a decrease in Life Expectancy by approximately -0.031*100 = -3.1 years, on average.
 
 ### Estimates
 
