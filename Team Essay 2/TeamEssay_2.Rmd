@@ -135,7 +135,7 @@ Hence, we can continue building a linear model of y as a function of x1, x2, x3 
 
 ### Computation
 
-This multiple linear regression model tries to find the best line to predict life expectancy based on **Adult Mortality**, **ICR**, and **Schooling**
+This multiple linear regression model tries to find the best line to predict Life Expectancy based on **Adult Mortality**, **ICR**, and **Schooling**
 
 The **`lm()`** function is used to determine the beta coefficients for the linear model:
 
@@ -149,9 +149,14 @@ This result shows the intercept (b0) and the beta coefficients (b1, b2, b3) for 
 
 + Model: `Life.expectancy =  55.21856 + (-0.03102) * Adult.Mortality + (10.45743) * ICR + 1.05254 * Schooling`
 
+The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor values are significant in relation to Life Expectancy; in this case, they are. See the section on t-statistic and p-values for a detailed explanation of this.
+
 For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit increase in predictor, holding all other predictors fixed.
 
-For example, if Adult Mortality and ICR are fixed, 20 years of Schooling leads to an increase in Life Expectancy by approximately 1.05254*20= 21.0508 years, on average.
+For example:
++ if Adult Mortality and ICR are fixed, 10 years of Schooling leads to an increase in Life Expectancy by approximately 1.05254*10 = 10.52 years, on average.
++ if Adult Mortality and Schooling are fixed, 0.20 increase in the Human Dev index leads to an increase in Life Expectancy by approximately 10.457*0.10 = 2.10 years in life expectancy, on average. 
++ if ICR and Schooling are fixed, an adult mortality rate of 100, per 1k population, leads to a decrease in Life Expectancy by approximately -0.031*100 = -3.1 years, on average.
 
 ### Estimates
 
