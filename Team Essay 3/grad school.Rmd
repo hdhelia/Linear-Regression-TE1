@@ -52,7 +52,7 @@ library("tidyverse") #for data manipulation and visualization
 
 ### Examples of data and problem
 
-****
+**Admission into Graduate School**
 
 We used a hypothetical data set produced by UCLA to study the effect of certain variables on the likelihood of admission into graduate school. The variables defines are as follows:
 
@@ -68,6 +68,7 @@ We used a hypothetical data set produced by UCLA to study the effect of certain 
 ```{r, echo=TRUE, results='hide'}
 admit_data <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv") 
 
+#convert the numerical values for categorical variables to factors
 admit_data$admit <- factor(admit_data$admit,
                            levels=c(0,1),
                            labels=c("No", "Yes"))
@@ -103,7 +104,7 @@ ggplot(continuous, aes(x = gre)) +
     geom_density(alpha = .2, fill = "#FF6666")
 ```
 
-The variable has a few outliers and not well-defined distribution. You can partially tackle this problem by deleting the top 0.05 percent of the GRE scores.
+The variable has a few outliers and not well-defined distribution. You can partially tackle this problem by deleting the bottom 3 percent of the GRE scores.
 
 ```{r}
 # Compute the value of the bottom 3% percent of GRE scores
@@ -143,7 +144,7 @@ First, we select the categorical columns.
 ```{r}
 # Store the factor columns in factor in a data frame type.
 factor <- data.frame(select_if(admit_rescale, is.factor))
-	ncol(factor)
+ncol(factor)
 ```
 
 The dataset contains 2 categorical variables, Admission status and rank of institution.
@@ -158,7 +159,7 @@ graph <- lapply(names(factor),
 		geom_bar() +
 		theme(axis.text.x = element_text(angle = 90)))
 
-graph #print the 2 graphs we produced
+graph # print the 2 graphs we produced
 ```
 
 ### Visualization
@@ -218,9 +219,62 @@ ggplot(admit_rescale, aes(x = gpa, y = gre)) +
         aes(color = admit)) +
     theme_classic()
 ```
+
+```{r}
+ggplot(admit_rescale, aes(x = gpa, y = gre)) +
+    geom_point(aes(color = rank),
+        size = 0.5) +
+    stat_smooth(method = 'lm',
+        formula = y~poly(x, 2),
+        se = TRUE,
+        aes(color = rank)) +
+    theme_classic()
+```
+
+**Correlation**
+
+The next check is to visualize the correlation between the variables. You convert the factor level type to numeric so that you can plot a heat map containing the coefficient of correlation computed with the Spearman method.
+
+```{r}
+# Convert data to numeric
+corr <- data.frame(lapply(admit_rescale, as.integer))
+# plot the heat map with the following arguments:
+ggcorr(corr, 
+    method = c("pairwise", "spearman"), # compute the correlation
+    nbreaks = 6, # Number of break
+    hjust = 0.8, # Control position of the variable name in the plot
+    label = TRUE, # Add labels in the center of the windows
+    label_size = 3, # Size labels
+    color = "grey50") # Color of the label
+```
+
+### Train and test set
+
+Any supervised machine learning task require to split the data between a train set and a test set. You can use the "function" you created in the other supervised learning tutorials to create a train/test set.
+
+```{r}
+set.seed(1234)
+create_train_test <- function(data, size = 0.8, train = TRUE) {
+    n_row = nrow(data)
+    total_row = size * n_row
+    train_sample <- 1: total_row
+    if (train == TRUE) {
+        return (data[train_sample, ])
+    } else {
+        return (data[-train_sample, ])
+    }
+}
+data_train <- create_train_test(admit_rescale, 0.8, train = TRUE)
+data_test <- create_train_test(admit_rescale, 0.8, train = FALSE)
+
+dim(data_train)
+dim(data_test)
+```
+
+
 ## (3) ANALYSIS
 
-### Computation
+### Model Creation and Computation
 
 
 
@@ -262,4 +316,4 @@ ggplot(admit_rescale, aes(x = gpa, y = gre)) +
 
 “GLM in R: Generalized Linear Model with Example.” Guru99, 2021, www.guru99.com/r-generalized-linear-model.html. 
 
-Rodríguez, Germán. “GR's Website.” Princeton University, The Trustees of Princeton University, 2020, data.princeton.edu/wws509/datasets/#cuse2. 
+“Logit Regression” IDRE Stats, stats.idre.ucla.edu/r/dae/logit-regression/
