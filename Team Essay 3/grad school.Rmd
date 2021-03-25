@@ -209,7 +209,6 @@ ggplot(admit_rescale, aes(x = gpa)) +
     theme_classic()
 ```
 ```{r}
-library(ggplot2)
 ggplot(admit_rescale, aes(x = gpa, y = gre)) +
     geom_point(aes(color = admit),
         size = 0.5) +
