@@ -282,7 +282,7 @@ dim(data_test)
 ```{r}
 formula <- admit~.
 logit <- glm(formula, data = data_train, family = 'binomial')
-logit
+summary(logit)
 
 ```
 
