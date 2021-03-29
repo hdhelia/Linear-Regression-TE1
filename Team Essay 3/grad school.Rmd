@@ -277,36 +277,29 @@ dim(data_test)
 ## (3) ANALYSIS
 
 ### Model Creation and Computation
-This multiple linear regression model tries to find the best line to predict Life Expectancy based on **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow**.
 
-The glm() function is used to determine the beta coefficients for the linear model:
-
+##Build The Model
 ```{r}
 formula <- admit~.
 logit <- glm(formula, data = data_train, family = 'binomial')
 logit
 
 ```
-This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** variables.
+
+
+
+
+###Assess the performance of the model
+
+
+
+
 ### Interpretation of Model: 
 
-+ Model: `Admit = 0.005567 + 0.204342 * GRE + 0.211081 * GPA + ( -0.861652) * Rankhigh + (-0.601298) * RankMedium + (-17.386917) * Ranklow` 
 
-The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor variables are significant in relation to Life Expectancy; in this case, they are, so all three of our initial predictor variables will stay in the model. See the section on t-statistic and p-values for a detailed explanation of this.
-
-The intercept b0 = 0.1683 represents the predicted value if all variables equal zero; if **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** are all zero, the model predicts that the admission rate is 0.005567 on average. 
-
-For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit
-increase in predictor, holding all other predictors fixed.
-
-For example:
-+ssss
-+ssss
 
 ### Estimates
-We find the estimated Admission Rate in percentage given by our model for the respective **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** values and compare them to the actual values.
 
-**Admission Rate Data**
 
 ## (4) MODEL EVALUATION
 
@@ -315,62 +308,6 @@ We find the estimated Admission Rate in percentage given by our model for the re
 
 ```{r}
 summary(logit)
-logit$coef
-b0 <- logit$coef[1] # intercept
-gre <- logit$coef[2]
-gpa <- -logit$coef[3]
-rankhigh <- logit$coef[4]
-rankmedium <- logit$coef[5]
-ranklow <- logit$coef[6]
-
-
-gre_range <- seq(from=min(data_train$gre), to=max(data_train$gre), by=.01)
-gpa_val <- mean(data_train$gpa)
-
-a_logits <- b0 + 
-  gre*gre_range + 
-  gpa*gpa_val + 
-  rankhigh*0 + 
-  rankmedium*0 + 
-  ranklow * 0
-
-
-b_logits <- b0 + 
-  gre*gre_range + 
-  gpa*gpa_val + 
-  rankhigh*1 + 
-  rankmedium*0 + 
-  ranklow * 0
-
-c_logits <- b0 + 
-  gre*gre_range + 
-  gpa*gpa_val + 
-  rankhigh*0 + 
-  rankmedium*1 + 
-  ranklow * 0
-
-d_logits <- b0 + 
-  gre*gre_range + 
-  gpa*gpa_val + 
-  rankhigh*0 + 
-  rankmedium*0 + 
-  ranklow *1
-
-# Compute the probibilities (this is what will actually get plotted):
-a_probs <- exp(a_logits)/(1 + exp(a_logits))
-b_probs <- exp(b_logits)/(1 + exp(b_logits))
-c_probs <- exp(c_logits)/(1 + exp(c_logits))
-d_probs <- exp(d_logits)/(1 + exp(d_logits))
-  
-  
-plot.data <- data.frame(a=a_probs, b=b_probs, c=c_probs, d=d_probs, X1=gre_range)
-plot.data <- gather(plot.data, key=group, value=prob, a:d)
-head(plot.data)  
-
-ggplot(plot.data, aes(x=X1, y=prob, color=group)) + # asking it to set the color by the variable "group" is what makes it draw three different lines
-  geom_line(lwd=2) + 
-  labs(x="X1", y="P(Admission rate)", title="Probability of getting accepted") 
-
 ```
 
 
@@ -413,9 +350,8 @@ logit$coefficients
 The coefficients table, in the model statistical summary, shows:
 + the estimates of the beta coefficients
 + the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient,
-the SE reflects how the coefficient varies under repeated sampling. It can be used to compute the
-confidence intervals and the t-statistic.
-+ The z-value is the regression coefficient divided by standard error.
+the SE reflects how the coefficient varies under repeated sampling.
+
 
 ```{r}
 summary(logit)$coef
@@ -425,9 +361,12 @@ summary(logit)$coef
 ### Prediction and Model accuracy
 
 
-**1. Confusion Matrix **
+###Confusion Matrix
 The confusion matrix is a better choice to evaluate the classification performance compared with the different metrics you saw before. The general idea is to count the number of times True instances are classified are False.
 
+```{r, echo=FALSE}
+knitr::include_graphics("confusionMat.png")
+```
 
 To compute the confusion matrix, you first need to have a set of predictions so that they can be compared to the actual targets.
 
@@ -437,23 +376,31 @@ predict <- predict(logit, data_test, type = 'response')
 table_mat <- table(data_test$admit, predict > 0.5)
 table_mat
 ```
-Each row in a confusion matrix represents an actual target, while each column represents a predicted target. The first row of this matrix considers the income lower than 50k (the False class): 6241 were correctly classified as individuals with income lower than 50k (True negative), while the remaining one was wrongly classified as above 50k (False positive). The second row considers the income above 50k, the positive class were 1229 (True positive), while the True negative was 1074.
+Each row in a confusion matrix represents an actual target, while each column represents a predicted target. The first row of this matrix considers the did not get accepted (the False class): 46 were correctly classified as individuals that did not get accepted (**True negative**), while the remaining one was wrongly classified (**False positive**). The second row considers those who get accepted, the positive class were 9 (**True positive**), while the **True negative** was 17 .
 
-You can calculate the model accuracy by summing the true positive + true negative over the total observation
+You can calculate the model **accuracy** by summing the true positive + true negative over the total observation
+
+```{r, echo=FALSE}
+knitr::include_graphics("accuracy.jpg")
+```
 
 ```{r}
 accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
 accuracy_Test
 ```
 
-The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the accuracy test paradox. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. Imagine now, the model classified all the classes as negative (i.e. lower than 50k). You would have an accuracy of 75 percent (6718/6718+2257). Your model performs better but struggles to distinguish the true positive with the true negative.
+The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the **accuracy test paradox**. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. Imagine now, the model classified all the classes as negative (i.e. did not get accepted). You would have an accuracy of 71 percent (55/55+23). Your model performs better but struggles to distinguish the true positive with the true negative.
 
+In such situation, it is preferable to have a more concise metric. We can look at:
 
-**2. Precision vs Recall **
-Precision looks at the accuracy of the positive prediction. Recall is the ratio of positive instances that are correctly detected by the classifier;
++ Precision=TP/(TP+FP)
++ Recall=TP/(TP+FN)
+
+###Precision vs Recall
+**Precision** looks at the accuracy of the positive prediction. **Recall** is the ratio of positive instances that are correctly detected by the classifier;
 
 You can construct two functions to compute these two metrics
-
+1.Construct precision
 ```{r}
 precision <- function(matrix) {
 	# True positive
@@ -477,14 +424,20 @@ rec <- recall(table_mat)
 rec
 ```
 
-When the model says it is an individual above 50k, it is correct in only 54 percent of the case, and can claim individuals above 50k in 72 percent of the case.
+When the model says it is an individual who did not get accepted, it is correct in only 34 percent of the case, and can claim individuals who did not get accepted in 60 percent of the case.
 
-You can create the  score based on the precision and recall. The  is a harmonic mean of these two metrics, meaning it gives more weight to the lower values.
+You can create the *F1* score based on the precision and recall. The *F1* is a harmonic mean of these two metrics, meaning it gives more weight to the lower values.
+
+```{r, echo=FALSE}
+knitr::include_graphics("F1.jpg")
+```
+
 
 ```{r}
 f1 <- 2 * ((prec * rec) / (prec + rec))
 f1
 ```
+
 **3.Precision vs Recall **
 It is impossible to have both a high precision and high recall.
 
@@ -494,7 +447,7 @@ If we increase the precision, the correct individual will be better predicted, b
 + If you need to detect potential fraudulent people in the street through facial recognition, it would be better to catch many people labeled as fraudulent even though the precision is low. The police will be able to release the non-fraudulent individual.
 
 **4.The ROC curve **
-The **Receiver Operating Characteristic** curve is another common tool used with binary classification. It is very similar to the precision/recall curve, but instead of plotting precision versus recall, the ROC curve shows the true positive rate (i.e., recall) against the false positive rate. The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called specificity. Hence the ROC curve plots sensitivity (recall) versus 1-specificity
+The **Receiver Operating Characteristic** curve is another common tool used with binary classification. It is very similar to the precision/recall curve, but instead of plotting precision versus recall, the ROC curve shows the true positive rate (i.e., recall) against the false positive rate. The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called **specificity**. Hence the ROC curve plots **sensitivity** (recall) versus 1-specificity
 
 To plot the ROC curve, we need to install a library called RORC. We can find in the conda library. You can type the code:
 
@@ -503,6 +456,7 @@ conda install -c r r-rocr --yes
 We can plot the ROC with the prediction() and performance() functions.
 ```{r}
 library(ROCR)
+data_test$admit
 ROCRpred <- prediction(predict, data_test$admit)
 ROCRperf <- performance(ROCRpred, 'tpr', 'fpr')
 plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
