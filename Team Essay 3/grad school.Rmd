@@ -284,13 +284,13 @@ The glm() function is used to determine the beta coefficients for the linear mod
 ```{r}
 formula <- admit~.
 logit <- glm(formula, data = data_train, family = 'binomial')
-logit
+summary(logit)
 
 ```
 This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** variables.
 ### Interpretation of Model: 
 
-+ Model: `Admit = 0.005567 + 0.204342 * GRE + 0.211081 * GPA + ( -0.861652) * Rankhigh + (-0.601298) * RankMedium + (-17.386917) * Ranklow` 
++ Model: `Admit = 0.1683 + 0.2626 * GRE + 0.3642 * GPA + (-0.7197) * Rankhigh + (-1.5836) * RankMedium + (-1.5125) * Ranklow` 
 
 The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor variables are significant in relation to Life Expectancy; in this case, they are, so all three of our initial predictor variables will stay in the model. See the section on t-statistic and p-values for a detailed explanation of this.
 
