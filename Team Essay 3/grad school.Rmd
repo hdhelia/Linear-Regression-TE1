@@ -128,9 +128,10 @@ ggplot(admit_drop, aes(x = gre)) +
 You can standardize each column to improve the performance because your data does not have the same scale. Mutate the numeric colums and then scale them.
 
 ```{r}
-admit_rescale <- admit_drop 
-#%>%
-#	mutate_if(is.numeric, funs(as.numeric(scale(.))))
+admit_rescale <- admit_drop
+
+# admit_rescale <- admit_drop %>%
+# mutate_if(is.numeric, funs(as.numeric(scale(.))))
 
 head(admit_rescale)
 ```
@@ -332,9 +333,8 @@ The logistic regression coefficients give the change in the log odds of the outc
 
 ### Regression line
 
-```{r}
-summary(logit)
-logit$coef
+```{r, echo=FALSE, results='hide'}
+# save the coefficient values so we can use them in the equations
 b0 <- logit$coef[1] # intercept
 gre <- logit$coef[2]
 gpa <- -logit$coef[3]
@@ -342,33 +342,43 @@ rankhigh <- logit$coef[4]
 rankmedium <- logit$coef[5]
 ranklow <- logit$coef[6]
 
-
+# The GRE range we set here will determine the range on the 
+# x-axis of the final plot
 gre_range <- seq(from=min(data_train$gre), to=max(data_train$gre), by=.01)
+
+# by plugging in the mean as the value for GPA, we'll be 
+# generating plots that show the relationship between GRE and 
+# the outcome "for someone with an average GPA".
 gpa_val <- mean(data_train$gpa)
 
-a_logits <- b0 + 
+# Next, compute the equations for each group in logit terms. 
+# You’ll need to plug in values for all but one variable – whichever 
+# variable you decided will be displayed on the x-axis of your plot. 
+# You make a separate equation for each group by plugging in 
+# different values for the group dummy codes.
+
+ref_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
   rankmedium*0 + 
   ranklow * 0
 
-
-b_logits <- b0 + 
+high_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*1 + 
   rankmedium*0 + 
   ranklow * 0
 
-c_logits <- b0 + 
+medium_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
   rankmedium*1 + 
   ranklow * 0
 
-d_logits <- b0 + 
+low_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
@@ -376,22 +386,26 @@ d_logits <- b0 +
   ranklow *1
 
 # Compute the probabilities (this is what will actually get plotted):
-a_probs <- exp(a_logits)/(1 + exp(a_logits))
-b_probs <- exp(b_logits)/(1 + exp(b_logits))
-c_probs <- exp(c_logits)/(1 + exp(c_logits))
-d_probs <- exp(d_logits)/(1 + exp(d_logits))
+a_probs <- exp(ref_logits)/(1 + exp(ref_logits))
+b_probs <- exp(high_logits)/(1 + exp(high_logits))
+c_probs <- exp(medium_logits)/(1 + exp(medium_logits))
+d_probs <- exp(low_logits)/(1 + exp(low_logits))
   
-  
-plot.data <- data.frame(a=a_probs, b=b_probs, c=c_probs, d=d_probs, X1=gre_range)
-plot.data <- gather(plot.data, key=group, value=prob, a:d)
-head(plot.data)  
+ 
+plot.data <- data.frame(reference=a_probs, high=b_probs, medium=c_probs, low=d_probs, GRE=gre_range)
+plot.data <- gather(plot.data, key=group, value=prob, reference:low)
 
-ggplot(plot.data, aes(x=X1, y=prob, color=group)) + # asking it to set the color by the variable "group" is what makes it draw three different lines
-  geom_line(lwd=2) + 
-  labs(x="X1", y="P(Admission rate)", title="Probability of getting accepted") 
-
+head(plot.data)
 ```
 
+```{r}
+# asking it to set the color by the variable "group" is what makes it draw three different lines
+
+ggplot(plot.data, aes(x=GRE, y=prob, color=group), size = 0.1) +
+  geom_line(lwd=1) + 
+  labs(x="GRE", y="P(Admission rate)", title="Probability of getting accepted") 
+
+```
 
 ### Model Assessment 
 
@@ -399,6 +413,7 @@ In the previous sections, we came up with a logistic regression model of admitta
 
 **Admit** = (-4.57174) + 0.002445 * GRE + 0.9648 * GPA + 
 (-0.71967) * rankhigh + (-1.5836) * rankmedium + (-1.5125) * ranklow
+
 
 
 ### Model Summary
@@ -412,7 +427,7 @@ The performance of a logistic regression is evaluated with specific key metrics.
 
 The summary outputs shows 7 components, including:
 
-+  **Call**: Shows the function call used to compute the regression model.
++ **Call**: Shows the function call used to compute the regression model.
 
 + **Deviance residuals**, which are a measure of model fit. This part of output shows the distribution of the deviance residuals for individual cases used in the model.
 
@@ -426,33 +441,30 @@ The summary outputs shows 7 components, including:
 
 + **Number of Fisher Scoring iterations:** Number of iterations before converging. In our case, number of FSI is 4.
 
+### Coefficients significance
+
+The coefficients table, in the model statistical summary, shows:
+
++ The glm function internally encodes categorical variables into n - 1 distinct levels.
++ **Estimate** represents the regression coefficients value. Here, the regression coefficients explain the change in log(odds) of the response variable for one unit change in the predictor variable.
++ **Std. Error** (SE) represents the standard error associated with the regression coefficients.
++ **z value** is analogous to t-statistics in multiple regression output. z value > 2 implies the corresponding variable is significant.
++ **p value** determines the probability of significance of predictor variables. With 95% confidence level, a variable having p < 0.05 is considered an important predictor. The same can be inferred by observing stars against p value.
+
+```{r}
+summary(logit)$coef
+```
 In addition, we can also perform an ANOVA Chi-square test to check the overall effect of variables on the dependent variable.
 
 ```{r}
 anova(logit, test = 'Chisq')
 ```
 
-```{r}
-model2 <- glm( admit ~ gpa + rank, data = data_train, family = binomial(link="logit"))
+Following are the insights we can collect for the output above:
 
-summary(model2)
-
-anova(logit, model2, test = 'Chisq')
-```
-
-### Coefficients significance
-
-The coefficients table, in the model statistical summary, shows:
-
-+ the estimates of the beta coefficients
-+ the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient,
-the SE reflects how the coefficient varies under repeated sampling. It can be used to compute the
-confidence intervals and the t-statistic.
-+ The z-value is the regression coefficient divided by standard error.
-
-```{r}
-summary(logit)$coef
-```
++ The AIC value of this model is 363.6
+Following are the insights we can collect for the output above:
++ Normally we would check which variables aren't significant in presence of others and we'd try building another model without including them in order to reduce AIC. However, we find that we don't have many variables to begin with and all of them are, more or less, significant. So there isn't much we can do to improve this model.
 
 **Standard errors and confidence intervals**
 
@@ -466,9 +478,18 @@ confint(logit)
 confint.default(logit)
 ```
 
+We can test for an overall effect of rank using the wald.test function of the aod library. We use the wald.test function. b supplies the coefficients, while Sigma supplies the variance covariance matrix of the error terms, finally Terms tells R which terms in the model are to be tested, in this case, terms 4, 5, and 6, are the three terms for the levels of rank.
+ 
+```{r}
+library(aod)
+wald.test(b = coef(logit), Sigma = vcov(logit), Terms = 4:6)
+```
+
+The chi-squared test statistic of 19.3, with three degrees of freedom is associated with a p-value of 0.00024 indicating that the overall effect of rank is statistically significant.
+
 ### Prediction and Model accuracy
 
-In Linear Regression, we check adjusted R², F Statistics, MAE, and RMSE to evaluate model fit and accuracy. But, Logistic Regression employs all different sets of metrics. Here, we deal with probabilities and categorical values. Following are the evaluation metrics used for Logistic Regression (in addition to AIC, Null, Residual deviance):
+In Linear Regression, we check adjusted R², F Statistics, MAE, and RMSE to evaluate model fit and accuracy. But, Logistic Regression employs all different sets of metrics. Here, we deal with probabilities and categorical values. Following are the evaluation metrics used for Logistic Regression (in addition to AIC, Null and Residual deviance):
 
 **1. Confusion Matrix **
 
@@ -562,7 +583,7 @@ f1 <- 2 * ((prec * rec) / (prec + rec))
 f1
 ```
 
-**3.Precision vs Recall **
+**3. Precision vs Recall tradeoff**
 
 It is impossible to have both a high precision and high recall.
 
@@ -571,15 +592,16 @@ If we increase the precision, the correct individual will be better predicted, b
 + Imagine, you need to predict if a patient has a disease. You want to be as precise as possible.
 + If you need to detect potential fraudulent people in the street through facial recognition, it would be better to catch many people labeled as fraudulent even though the precision is low. The police will be able to release the non-fraudulent individual.
 
-**4.The ROC curve **
+**4. The ROC curve **
 
-The **Receiver Operating Characteristic** curve is another common tool used with binary classification. It is very similar to the precision/recall curve, but instead of plotting precision versus recall, the ROC curve shows the *true positive rate* (i.e., recall) against the *false positive rate*. 
+ROC determines the accuracy of a classification model at a user defined threshold value. It determines the model's accuracy using Area Under Curve (AUC). The area under the curve (AUC), also referred to as index of accuracy (A) or concordant index, represents the performance of the ROC curve. Higher the area, better the model. ROC is plotted between **True Positive Rate** (Y axis) and **False Positive Rate** (X Axis).
 
-The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called specificity. Hence the ROC curve plots sensitivity (recall) versus 1-specificity.
+The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called specificity. Hence the ROC curve plots sensitivity (recall) versus 1-specificity (fpr).
 
 We can plot the ROC with the prediction() and performance() functions.
 
 ```{r}
+library(Metrics)
 ROCRpred <- prediction(predict$rankP, predict$admit)
 ROCRperf <- performance(ROCRpred, 'tpr', 'fpr')
 plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
@@ -598,12 +620,17 @@ We used **supervised learning** to create a classifier that predicts if a studen
 Also, to determine how well our model fits the data, we inspect the Akaike Information Criteria (AIC), null deviance, Residual Deviance, and the number of Fisher Scoring iterations.
 
 + AIC (Akaike Information Criteria): We got AIC = 363.6, which is relatively small. Thus, we can conclude our model is closer to the truth.
+
 + Null deviance: We got a small value of Null deviation (388.36 on 309 degrees of freedom), which implies that our model is a good fit.
-+ Residual Deviance: The Residual Deviance has reduced by 36.76 with a loss of 5 degrees of freedom. Though it is a significant reduction in deviance, we still got a small value of RD, thus, our model explains the data really well.
-+ Number of Fisher Scoring iterations: 4.
+
++ Residual Deviance: The Residual Deviance (351.6 on 304 DF) has reduced by 36.76 with a loss of 5 degrees of freedom. The larger the difference between null and residual deviance, better the model. Though it is a significant reduction in deviance, we still got a small value of RD, thus, our model explains the data really well.
 
 ## (6) REFERENCES
 
 “GLM in R: Generalized Linear Model with Example.” Guru99, 2021, www.guru99.com/r-generalized-linear-model.html. 
 
 “Logit Regression” IDRE Stats, stats.idre.ucla.edu/r/dae/logit-regression/
+
+https://www.hackerearth.com/practice/machine-learning/machine-learning-algorithms/logistic-regression-analysis-r/tutorial/
+
+https://blogs.uoregon.edu/rclub/2016/04/05/plotting-your-logistic-regression-models/
