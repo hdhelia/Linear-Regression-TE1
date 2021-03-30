@@ -11,7 +11,7 @@ output: html_document
 
 Logistic regression is used to predict a class, i.e., a probability. Logistic regression can predict a binary outcome accurately.
 
-Imagine you want to predict whether a a woman wants more children or not based on many attributes. The logistic regression is of the form 0/1. y = 0 if she desires more children, y = 1 if she doesn't.
+Imagine you want to predict whether one would get admitted into grad school like UCLA based on many attributes. The logistic regression is of the form 0/1. y = 0 if she desires more children, y = 1 if she doesn't.
 
 A logistic regression model differs from linear regression model in two ways.
 
@@ -63,7 +63,7 @@ We used a hypothetical data set produced by UCLA to study the effect of certain 
 + prestige of the undergraduate institution ranks 1 to 4. 1 being most prestigious and 4 being the least.
 + admission into graduate school. The response variable, 0 (don't admit) / 1 (admit), is a binary variable.
 
-`The objective is to predict whether one will get admission into an institution given their grades and the prestige of the institution`.
+`The objective is to predict whether one will get admission into an institution given their grades and the prestige of their undergrad institution`.
 
 **Importing the data file**
 
@@ -128,8 +128,9 @@ ggplot(admit_drop, aes(x = gre)) +
 You can standardize each column to improve the performance because your data does not have the same scale. Mutate the numeric colums and then scale them.
 
 ```{r}
-admit_rescale <- admit_drop %>%
-	mutate_if(is.numeric, funs(as.numeric(scale(.))))
+admit_rescale <- admit_drop 
+#%>%
+#	mutate_if(is.numeric, funs(as.numeric(scale(.))))
 
 head(admit_rescale)
 ```
@@ -149,7 +150,7 @@ factor <- data.frame(select_if(admit_rescale, is.factor))
 ncol(factor)
 ```
 
-The dataset contains 2 categorical variables, Admission status and rank of institution.
+The dataset contains 2 categorical variables, Admission status and rank of undergrad institution.
 
 Next we store the bar chart of each column in a list.
 
@@ -163,6 +164,7 @@ graph <- lapply(names(factor),
 
 graph # print the 2 graphs we produced
 ```
+We can observe from the above graphs that majority of the individuals didn't get into the grad schools. And most of the applicants seem to have come from a high ranked institution. But we don't see how these two graphs relate so we do further analysis in the next few sections.
 
 ### Visualization
 
@@ -175,7 +177,7 @@ table(admit_rescale$rank)
 ```
 
 
-It is time to check some statistics about our target variables. In the graph below, 
+It is time to check some statistics about our target variables. In the graph below, we see that the greater the rank of the institution a student did their undergrad from, the higher is their chance of getting admitted.
 
 ```{r}
 ggplot(admit_rescale, aes(x = rank, fill = admit)) +
@@ -183,8 +185,10 @@ ggplot(admit_rescale, aes(x = rank, fill = admit)) +
     theme_classic()
 ```
 
+In this net plot we see, through the use of standardized gpa and gre values, the chances of being admitted. From what we see, it seems that a higher GPA and a higher GRE score increases the chnaces of admission. WHich one has more effect cannot really be determined in this plot.
+
 ```{r}
-ggplot(admit_rescale, aes(x = admit, y = gre)) +
+gre_g <- ggplot(admit_rescale, aes(x = admit, y = gre)) +
     geom_boxplot() +
     stat_summary(fun = mean,
         geom = "point",
@@ -192,25 +196,45 @@ ggplot(admit_rescale, aes(x = admit, y = gre)) +
         color = "steelblue") +
     theme_classic()
 
-ggplot(admit_rescale, aes(x = admit, y = gpa)) +
+gpa_g <- ggplot(admit_rescale, aes(x = admit, y = gpa)) +
     geom_boxplot() +
     stat_summary(fun = mean,
         geom = "point",
         size = 3,
         color = "steelblue") +
     theme_classic()
+
+ggarrange(gre_g, gpa_g, 
+          ncol = 2, nrow = 1)
 ```
+
+Next we visualize the density distributions for the gre and gpa scores categorized by rank. 
+We observe that the low rank and medium ranks are concentrated around the lower GRE scores; whereas, the GRE scores of students from high/very high ranked institutions are concentrated around the greater GRE scores. In other words, the plot is skewed to the left for low ranked institutes vs more even distribution for high ranks.
+Wedon't observe many differences for the GPA values except for the tail on the right where you observe that the higher ranks are more evenly distributed over the higher gpa values which isn't the same for low ranked institutes.
 
 ```{r}
 # Plot distribution working time by education
-ggplot(admit_rescale, aes(x = gre)) +
-    geom_density(aes(color = rank), alpha = 0.5) +
-    theme_classic()
+gre_line <- ggplot(admit_rescale, aes(x = gre)) +
+  geom_density(aes(color = rank), alpha = 0.5) +
+  theme_classic() +
+  facet_wrap(~rank)
 
-ggplot(admit_rescale, aes(x = gpa)) +
-    geom_density(aes(color = rank), alpha = 0.5) +
-    theme_classic()
+gpa_line <- ggplot(admit_rescale, aes(x = gpa)) +
+  geom_density(aes(color = rank), alpha = 0.5) +
+  theme_classic()+
+  facet_wrap(~rank)
+
+ggarrange(gre_line, gpa_line, 
+          ncol = 1, nrow = 2)
 ```
+
+We created a linear regression model comparing gre and gpa and their impact on admittance. We observe three things from this plot:
+  1. The line displaying admittance shows that GPA and GRE tend to be higher than no admittance. 
+  2. Regardless of admittance, GRE and GPA tend to be positively correlated meaning the higher the GPA, the higher the GRE tends to be for individuals.
+  3. It can also be observed that individuals with low gpa scores, higher GRE scores can increase your chances of admittance. 
+  
+It may even be hypothesized that GRE scores make a bigger impact on admittance than GPA. For the same GPA, Having a 
+  
 ```{r}
 ggplot(admit_rescale, aes(x = gpa, y = gre)) +
     geom_point(aes(color = admit),
@@ -222,13 +246,14 @@ ggplot(admit_rescale, aes(x = gpa, y = gre)) +
     theme_classic()
 ```
 
-```{r}
+```{r, echo=FALSE, results='hide'}
+#Not using this plot; unnecessary
 ggplot(admit_rescale, aes(x = gpa, y = gre)) +
     geom_point(aes(color = rank),
         size = 0.5) +
     stat_smooth(method = 'lm',
         formula = y~poly(x, 2),
-        se = TRUE,
+        se = FALSE,
         aes(color = rank)) +
     theme_classic()
 ```
@@ -243,12 +268,14 @@ corr <- data.frame(lapply(admit_rescale, as.integer))
 # plot the heat map with the following arguments:
 ggcorr(corr, 
     method = c("pairwise", "spearman"), # compute the correlation
-    nbreaks = 6, # Number of break
+    nbreaks = 4, # Number of break
     hjust = 0.8, # Control position of the variable name in the plot
     label = TRUE, # Add labels in the center of the windows
     label_size = 3, # Size labels
     color = "grey50") # Color of the label
 ```
+
+We find a weak correlation between the variables but we correctly observe that gpa and gre have a positive correlation with admittance, whereas rank has a neggative correlation with all other variables.
 
 ### Train and test set
 
@@ -276,42 +303,34 @@ dim(data_test)
 
 ## (3) ANALYSIS
 
-### Model Creation and Computation
-This multiple linear regression model tries to find the best line to predict Life Expectancy based on **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow**.
+### Computation
 
-The glm() function is used to determine the beta coefficients for the linear model:
+The code below estimates a logistic regression model using the glm (generalized linear model) function. The purpose is to predict the admittance status based on a set a different features (gre, gpa, rank).
 
 ```{r}
-formula <- admit~.
-logit <- glm(formula, data = data_train, family = 'binomial')
-summary(logit)
-
+logit <- glm( admit ~ gre + gpa + rank, 
+              data = data_train, 
+              family = binomial(link='logit'))
+logit
 ```
-This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** variables.
-### Interpretation of Model: 
+This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**, **Rankhigh**, *RankMedium**, and **Ranklow** variables.
 
-+ Model: `Admit = 0.1683 + 0.2626 * GRE + 0.3642 * GPA + (-0.7197) * Rankhigh + (-1.5836) * RankMedium + (-1.5125) * Ranklow` 
+### Interpretation: 
 
-The first step in interpreting the multiple regression analysis is to examine the F-statistic and the associated p-value, at the bottom of model summary. This is done to ensure that the predictor variables are significant in relation to Life Expectancy; in this case, they are, so all three of our initial predictor variables will stay in the model. See the section on t-statistic and p-values for a detailed explanation of this.
++ **Model**: Admit = -4.57174 + 0.002445 * GRE + 0.9648 * GPA + 
+(-0.71967) * rankhigh + (-1.5836) * rankmedium + (-1.5125) * ranklow
 
-The intercept b0 = 0.1683 represents the predicted value if all variables equal zero; if **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** are all zero, the model predicts that the admission rate is 0.005567 on average. 
+The intercept b0 = 0.1683 represents the predicted value if all variables equal zero; if **GRE**, **GPA**, **rankhigh**, **rankmedium**, and **ranklow** are all zero, the model predicts that the admission rate is -4.57174 on average. 
 
-For a given predictor variable, the coefficient (b) can be interpreted as the average effect on y of a one unit
-increase in predictor, holding all other predictors fixed.
+The logistic regression coefficients give the change in the log odds of the outcome for a one unit increase in the predictor variable.
 
-For example:
-+ssss
-+ssss
-
-### Estimates
-We find the estimated Admission Rate in percentage given by our model for the respective **GRE**, **GPA**,**Rankhigh**,**RankMedium**, and **Ranklow** values and compare them to the actual values.
-
-**Admission Rate Data**
++ For every one unit change in gre, the log odds of admission (versus non-admission) increases by 0.002445.
++ For a one unit increase in gpa, the log odds of being admitted to graduate school increases by 0.964802.
++ The indicator variables for rank have a slightly different interpretation. For example, having attended an undergraduate institution with rank of high, versus an institution with a rank of very high, changes the log odds of admission by -0.71967.
 
 ## (4) MODEL EVALUATION
 
 ### Regression line
-
 
 ```{r}
 summary(logit)
@@ -356,7 +375,7 @@ d_logits <- b0 +
   rankmedium*0 + 
   ranklow *1
 
-# Compute the probibilities (this is what will actually get plotted):
+# Compute the probabilities (this is what will actually get plotted):
 a_probs <- exp(a_logits)/(1 + exp(a_logits))
 b_probs <- exp(b_logits)/(1 + exp(b_logits))
 c_probs <- exp(c_logits)/(1 + exp(c_logits))
@@ -376,41 +395,55 @@ ggplot(plot.data, aes(x=X1, y=prob, color=group)) + # asking it to set the color
 
 ### Model Assessment 
 
+In the previous sections, we came up with a logistic regression model of admittance as a function of GPA, GRE and various ranks of undergrad institutes:
+
+**Admit** = (-4.57174) + 0.002445 * GRE + 0.9648 * GPA + 
+(-0.71967) * rankhigh + (-1.5836) * rankmedium + (-1.5125) * ranklow
 
 
 ### Model Summary
-We start by displaying the statistical summary of the model using the R function summary():
 
+We start by displaying the statistical summary of the model using the R function summary():
 
 ```{r}
 summary(logit)
-
 ```
-The summary of our model reveals interesting information. The performance of a logistic regression is evaluated with specific key metrics.
+The performance of a logistic regression is evaluated with specific key metrics.
 
-+ AIC (Akaike Information Criteria): This is the equivalent of R2 in logistic regression. It measures the fit when a penalty is applied to the number of parameters. Smaller AIC values indicate the model is closer to the truth.
+The summary outputs shows 7 components, including:
 
-+ Null deviance: Fits the model only with the intercept. The degree of freedom is n-1. We can interpret it as a Chi-square value (fitted value different from the actual value hypothesis testing).
++  **Call**: Shows the function call used to compute the regression model.
 
-+ Residual Deviance: Model with all the variables. It is also interpreted as a Chi-square hypothesis testing.
++ **Deviance residuals**, which are a measure of model fit. This part of output shows the distribution of the deviance residuals for individual cases used in the model.
 
-+ Number of Fisher Scoring iterations: Number of iterations before converging.
++ **Coefficients**, their **standard errors**, the **z-statistic** (sometimes called a Wald z-statistic), and the associated **p-values**. Since the p-value is less than or equal to the significance level of 0.05, we can conclude that all the predictors are statistically significant.
 
-The output of the glm() function is stored in a list. The code below shows all the items available in the logit variable we constructed to evaluate the logistic regression.
-ch
++ **Null deviance:** Fits the model only with the intercept. The degree of freedom is n-1. We can interpret it as a Chi-square value (fitted value different from the actual value hypothesis testing). We find it to be 383.36 on 309 DF.
+
++ **Residual Deviance:** Model with all the variables. It is also interpreted as a Chi-square hypothesis testing. We find it to be 351.6 on 304 DF.
+
++ **AIC (Akaike Information Criteria):** This is the equivalent of R2 in logistic regression. It measures the fit when a penalty is applied to the number of parameters. It is used to compare different models. Smaller AIC values indicate the model is closer to the truth. We find the AIC for our data to be 363.6.
+
++ **Number of Fisher Scoring iterations:** Number of iterations before converging. In our case, number of FSI is 4.
+
+In addition, we can also perform an ANOVA Chi-square test to check the overall effect of variables on the dependent variable.
+
 ```{r}
-
-lapply(logit, class)[1:3]
-
-logit$coefficients
-
-
+anova(logit, test = 'Chisq')
 ```
 
+```{r}
+model2 <- glm( admit ~ gpa + rank, data = data_train, family = binomial(link="logit"))
 
+summary(model2)
+
+anova(logit, model2, test = 'Chisq')
+```
 
 ### Coefficients significance
+
 The coefficients table, in the model statistical summary, shows:
+
 + the estimates of the beta coefficients
 + the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient,
 the SE reflects how the coefficient varies under repeated sampling. It can be used to compute the
@@ -421,35 +454,73 @@ confidence intervals and the t-statistic.
 summary(logit)$coef
 ```
 
+**Standard errors and confidence intervals**
+
+We can use the confint function to obtain confidence intervals for the coefficient estimates. Note that for logistic models, confidence intervals are based on the profiled log-likelihood function. We can also get CIs based on just the standard errors by using the default method.
+
+```{r}
+# CIs using profiled log-likelihood
+confint(logit)
+
+# CIs using standard errors
+confint.default(logit)
+```
 
 ### Prediction and Model accuracy
 
+In Linear Regression, we check adjusted R², F Statistics, MAE, and RMSE to evaluate model fit and accuracy. But, Logistic Regression employs all different sets of metrics. Here, we deal with probabilities and categorical values. Following are the evaluation metrics used for Logistic Regression (in addition to AIC, Null, Residual deviance):
 
 **1. Confusion Matrix **
+
 The confusion matrix is a better choice to evaluate the classification performance compared with the different metrics you saw before. The general idea is to count the number of times True instances are classified are False.
 
+```{r, echo=FALSE}
+knitr::include_graphics("confusion_matrix.JPG")
+```
 
 To compute the confusion matrix, you first need to have a set of predictions so that they can be compared to the actual targets.
 
 ```{r}
-predict <- predict(logit, data_test, type = 'response')
-# confusion matrix
-table_mat <- table(data_test$admit, predict > 0.5)
+# Compute the prediction on the test set. Set type = 'response' 
+# to compute the response probability
+
+predict <- data_test
+predict$rankP <- predict(logit, data_test, type = 'response')
+predict
+```
+
+Each row in a confusion matrix represents an actual target, while each column represents a predicted target. 
+
+```{r}
+# confusion matrix; predict > 0.5 means it returns 1 if the 
+# predicted probabilities are above 0.5, else 0.
+
+table_mat <- table(predict$admit, predict$rankP > 0.5)
 table_mat
 ```
-Each row in a confusion matrix represents an actual target, while each column represents a predicted target. The first row of this matrix considers the income lower than 50k (the False class): 6241 were correctly classified as individuals with income lower than 50k (True negative), while the remaining one was wrongly classified as above 50k (False positive). The second row considers the income above 50k, the positive class were 1229 (True positive), while the True negative was 1074.
+
+The first row of this matrix considers the rejected i.e. not admitted candidates (the False class): 46 were correctly classified as individuals who did not get admitted (**True negative**), while the remaining 6 was wrongly classified as admitted (**False positive**). The second row considers the cases of admittance, the positive class were 9 (**True positive**), while the **False negative** was 17.
 
 You can calculate the model accuracy by summing the true positive + true negative over the total observation
+
+```{r, echo=FALSE}
+knitr::include_graphics("accuracy.jpg")
+```
 
 ```{r}
 accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
 accuracy_Test
 ```
 
-The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the accuracy test paradox. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. Imagine now, the model classified all the classes as negative (i.e. lower than 50k). You would have an accuracy of 75 percent (6718/6718+2257). Your model performs better but struggles to distinguish the true positive with the true negative.
+The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the **accuracy test paradox**. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. 
 
+In such situation, it is preferable to have a more concise metric. We can look at:
+
++ Precision=TP/(TP+FP)
++ Recall=TP/(TP+FN)
 
 **2. Precision vs Recall **
+
 Precision looks at the accuracy of the positive prediction. Recall is the ratio of positive instances that are correctly detected by the classifier;
 
 You can construct two functions to compute these two metrics
@@ -473,19 +544,26 @@ recall <- function(matrix) {
 
 prec <- precision(table_mat)
 prec
+
 rec <- recall(table_mat)
 rec
 ```
 
-When the model says it is an individual above 50k, it is correct in only 54 percent of the case, and can claim individuals above 50k in 72 percent of the case.
+When the model says an individual gt admitted to grad school, it is correct in only 35 percent of the case, and can claim individuals got admitted in 60 percent of the case.
 
-You can create the  score based on the precision and recall. The  is a harmonic mean of these two metrics, meaning it gives more weight to the lower values.
+You can create the **F1** score based on the precision and recall. The **F1** is a harmonic mean of these two metrics, meaning it gives more weight to the lower values.
+
+```{r, echo=FALSE}
+knitr::include_graphics("prec_rec.JPG")
+```
 
 ```{r}
 f1 <- 2 * ((prec * rec) / (prec + rec))
 f1
 ```
+
 **3.Precision vs Recall **
+
 It is impossible to have both a high precision and high recall.
 
 If we increase the precision, the correct individual will be better predicted, but we would miss lots of them (lower recall). In some situation, we prefer higher precision than recall. There is a concave relationship between precision and recall.
@@ -494,26 +572,35 @@ If we increase the precision, the correct individual will be better predicted, b
 + If you need to detect potential fraudulent people in the street through facial recognition, it would be better to catch many people labeled as fraudulent even though the precision is low. The police will be able to release the non-fraudulent individual.
 
 **4.The ROC curve **
-The **Receiver Operating Characteristic** curve is another common tool used with binary classification. It is very similar to the precision/recall curve, but instead of plotting precision versus recall, the ROC curve shows the true positive rate (i.e., recall) against the false positive rate. The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called specificity. Hence the ROC curve plots sensitivity (recall) versus 1-specificity
 
-To plot the ROC curve, we need to install a library called RORC. We can find in the conda library. You can type the code:
+The **Receiver Operating Characteristic** curve is another common tool used with binary classification. It is very similar to the precision/recall curve, but instead of plotting precision versus recall, the ROC curve shows the *true positive rate* (i.e., recall) against the *false positive rate*. 
 
-conda install -c r r-rocr --yes
+The false positive rate is the ratio of negative instances that are incorrectly classified as positive. It is equal to one minus the true negative rate. The true negative rate is also called specificity. Hence the ROC curve plots sensitivity (recall) versus 1-specificity.
 
 We can plot the ROC with the prediction() and performance() functions.
+
 ```{r}
-library(ROCR)
-ROCRpred <- prediction(predict, data_test$admit)
+ROCRpred <- prediction(predict$rankP, predict$admit)
 ROCRperf <- performance(ROCRpred, 'tpr', 'fpr')
 plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
-
 ```
 
 ## (5) CONCLUSION
 
 ### Summary
 
+For this team essay, we developed a GLM model which predicts whether a student will get admission in a graduate school or not based on his scores and the prestige of the institution.
 
+A **logistic regression** model, that is used to predict binary outcomes (Yes(1) or No(0)), was developed to check if the student was admitted or not.
+
+We used **supervised learning** to create a classifier that predicts if a student will be admitted to a graduate school (Yes) or not (No). Using 80% of the data as our training data set, we trained the logistic regression model and then used the remaining 20% of the data to test the model. On testing our model, we got a decent accuracy of 70.51%. Hence, with approximately 7 out of 10 times, our model can successfully predict the correct classification of whether or not a student will get admission to a Graduate School based on his scores (GPA and GRE) and the prestige of the institution (Rank). 
+
+Also, to determine how well our model fits the data, we inspect the Akaike Information Criteria (AIC), null deviance, Residual Deviance, and the number of Fisher Scoring iterations.
+
++ AIC (Akaike Information Criteria): We got AIC = 363.6, which is relatively small. Thus, we can conclude our model is closer to the truth.
++ Null deviance: We got a small value of Null deviation (388.36 on 309 degrees of freedom), which implies that our model is a good fit.
++ Residual Deviance: The Residual Deviance has reduced by 36.76 with a loss of 5 degrees of freedom. Though it is a significant reduction in deviance, we still got a small value of RD, thus, our model explains the data really well.
++ Number of Fisher Scoring iterations: 4.
 
 ## (6) REFERENCES
 
