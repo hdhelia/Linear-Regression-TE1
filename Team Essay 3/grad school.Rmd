@@ -467,11 +467,17 @@ plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
 
 ### Summary
 
-For this team essay, we developed a GLM model which predicts whether a student will get admission in a graduate school or not based on his scores and the prestige of the institution. 
+For this team essay, we developed a GLM model which predicts whether a student will get admission in a graduate school or not based on his scores and the prestige of the institution.
 
 A **logistic regression** model, that is used to predict binary outcomes (Yes(1) or No(0)), was developed to check if the student was admitted or not.
 
 We used **supervised learning** to create a classifier that predicts if a student will be admitted to a graduate school (Yes) or not (No). Using 80% of the data as our training data set, we trained the logistic regression model and then used the remaining 20% of the data to test the model. On testing our model, we got a decent accuracy of 70.51%. Hence, with approximately 7 out of 10 times, our model can successfully predict the correct classification of whether or not a student will get admission to a Graduate School based on his scores (GPA and GRE) and the prestige of the institution (Rank). 
+
+Also, to determine how well our model fits the data, we inspect the Akaike Information Criteria (AIC), null deviance, Residual Deviance, and the number of Fisher Scoring iterations.
+    + AIC (Akaike Information Criteria): We got AIC = 363.6, which is relatively small. Thus we can conclude our model is closer to the truth.
+    + Null deviance: We got a small value of Null deviation (388.36 on 309 degrees of freedom), which implies that our model is a good fit.
+    + Residual Deviance: The Residual Deviance has reduced by 36.76 with a loss of 5 degrees of freedom. Though it is a significant reduction in deviance, we still got a small value of RD, thus, our model explains the data really well.
+    + Number of Fisher Scoring iterations: 4.
 
 
 ## (6) REFERENCES
