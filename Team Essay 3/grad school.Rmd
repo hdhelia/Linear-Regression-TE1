@@ -303,30 +303,26 @@ dim(data_test)
 
 ## (3) ANALYSIS
 
-### Computation
+### Model Creation and Computation
 
-The code below estimates a logistic regression model using the glm (generalized linear model) function. The purpose is to predict the admittance status based on a set a different features (gre, gpa, rank).
-
+##Build The Model
 ```{r}
 logit <- glm( admit ~ gre + gpa + rank, 
               data = data_train, 
               family = binomial(link='logit'))
 logit
 ```
-This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**, **Rankhigh**, *RankMedium**, and **Ranklow** variables.
 
-### Interpretation: 
+###Assess the performance of the model
 
-+ **Model**: Admit = -4.57174 + 0.002445 * GRE + 0.9648 * GPA + 
-(-0.71967) * rankhigh + (-1.5836) * rankmedium + (-1.5125) * ranklow
 
-The intercept b0 = 0.1683 represents the predicted value if all variables equal zero; if **GRE**, **GPA**, **rankhigh**, **rankmedium**, and **ranklow** are all zero, the model predicts that the admission rate is -4.57174 on average. 
 
-The logistic regression coefficients give the change in the log odds of the outcome for a one unit increase in the predictor variable.
 
-+ For every one unit change in gre, the log odds of admission (versus non-admission) increases by 0.002445.
-+ For a one unit increase in gpa, the log odds of being admitted to graduate school increases by 0.964802.
-+ The indicator variables for rank have a slightly different interpretation. For example, having attended an undergraduate institution with rank of high, versus an institution with a rank of very high, changes the log odds of admission by -0.71967.
+### Interpretation of Model: 
+
+
+
+### Estimates
 
 ## (4) MODEL EVALUATION
 
@@ -334,6 +330,7 @@ The logistic regression coefficients give the change in the log odds of the outc
 
 ```{r}
 summary(logit)
+
 logit$coef
 b0 <- logit$coef[1] # intercept
 gre <- logit$coef[2]
@@ -446,9 +443,8 @@ The coefficients table, in the model statistical summary, shows:
 
 + the estimates of the beta coefficients
 + the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient,
-the SE reflects how the coefficient varies under repeated sampling. It can be used to compute the
-confidence intervals and the t-statistic.
-+ The z-value is the regression coefficient divided by standard error.
+the SE reflects how the coefficient varies under repeated sampling.
+
 
 ```{r}
 summary(logit)$coef
@@ -476,6 +472,7 @@ The confusion matrix is a better choice to evaluate the classification performan
 
 ```{r, echo=FALSE}
 knitr::include_graphics("confusion_matrix.JPG")
+###Confusion Matrix
 ```
 
 To compute the confusion matrix, you first need to have a set of predictions so that they can be compared to the actual targets.
@@ -498,10 +495,15 @@ Each row in a confusion matrix represents an actual target, while each column re
 table_mat <- table(predict$admit, predict$rankP > 0.5)
 table_mat
 ```
-
 The first row of this matrix considers the rejected i.e. not admitted candidates (the False class): 46 were correctly classified as individuals who did not get admitted (**True negative**), while the remaining 6 was wrongly classified as admitted (**False positive**). The second row considers the cases of admittance, the positive class were 9 (**True positive**), while the **False negative** was 17.
 
-You can calculate the model accuracy by summing the true positive + true negative over the total observation
+Each row in a confusion matrix represents an actual target, while each column represents a predicted target. The first row of this matrix considers the did not get accepted (the False class): 46 were correctly classified as individuals that did not get accepted (**True negative**), while the remaining one was wrongly classified (**False positive**). The second row considers those who get accepted, the positive class were 9 (**True positive**), while the **True negative** was 17 .
+
+You can calculate the model **accuracy** by summing the true positive + true negative over the total observation
+
+```{r, echo=FALSE}
+knitr::include_graphics("accuracy.jpg")
+```
 
 ```{r, echo=FALSE}
 knitr::include_graphics("accuracy.jpg")
@@ -512,6 +514,7 @@ accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
 accuracy_Test
 ```
 
+<<<<<<< HEAD
 The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the **accuracy test paradox**. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. 
 
 In such situation, it is preferable to have a more concise metric. We can look at:
@@ -523,8 +526,18 @@ In such situation, it is preferable to have a more concise metric. We can look a
 
 Precision looks at the accuracy of the positive prediction. Recall is the ratio of positive instances that are correctly detected by the classifier;
 
-You can construct two functions to compute these two metrics
+The model appears to suffer from one problem, it overestimates the number of false negatives. This is called the **accuracy test paradox**. We stated that the accuracy is the ratio of correct predictions to the total number of cases. We can have relatively high accuracy but a useless model. It happens when there is a dominant class. If you look back at the confusion matrix, you can see most of the cases are classified as true negative. Imagine now, the model classified all the classes as negative (i.e. did not get accepted). You would have an accuracy of 71 percent (55/55+23). Your model performs better but struggles to distinguish the true positive with the true negative.
 
+In such situation, it is preferable to have a more concise metric. We can look at:
+
++ Precision=TP/(TP+FP)
++ Recall=TP/(TP+FN)
+
+###Precision vs Recall
+**Precision** looks at the accuracy of the positive prediction. **Recall** is the ratio of positive instances that are correctly detected by the classifier;
+
+You can construct two functions to compute these two metrics
+1.Construct precision
 ```{r}
 precision <- function(matrix) {
 	# True positive
@@ -556,6 +569,14 @@ You can create the **F1** score based on the precision and recall. The **F1** is
 ```{r, echo=FALSE}
 knitr::include_graphics("prec_rec.JPG")
 ```
+When the model says it is an individual who did not get accepted, it is correct in only 34 percent of the case, and can claim individuals who did not get accepted in 60 percent of the case.
+
+You can create the *F1* score based on the precision and recall. The *F1* is a harmonic mean of these two metrics, meaning it gives more weight to the lower values.
+
+```{r, echo=FALSE}
+knitr::include_graphics("F1.jpg")
+```
+
 
 ```{r}
 f1 <- 2 * ((prec * rec) / (prec + rec))
@@ -580,7 +601,9 @@ The false positive rate is the ratio of negative instances that are incorrectly 
 We can plot the ROC with the prediction() and performance() functions.
 
 ```{r}
-ROCRpred <- prediction(predict$rankP, predict$admit)
+library(ROCR)
+data_test$admit
+ROCRpred <- prediction(predict, data_test$admit)
 ROCRperf <- performance(ROCRpred, 'tpr', 'fpr')
 plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
 ```
@@ -596,6 +619,11 @@ A **logistic regression** model, that is used to predict binary outcomes (Yes(1)
 We used **supervised learning** to create a classifier that predicts if a student will be admitted to a graduate school (Yes) or not (No). Using 80% of the data as our training data set, we trained the logistic regression model and then used the remaining 20% of the data to test the model. On testing our model, we got a decent accuracy of 70.51%. Hence, with approximately 7 out of 10 times, our model can successfully predict the correct classification of whether or not a student will get admission to a Graduate School based on his scores (GPA and GRE) and the prestige of the institution (Rank). 
 
 Also, to determine how well our model fits the data, we inspect the Akaike Information Criteria (AIC), null deviance, Residual Deviance, and the number of Fisher Scoring iterations.
+
+    + AIC (Akaike Information Criteria): We got AIC = 363.6, which is relatively small. Thus we can conclude our model is closer to the truth.
+    + Null deviance: We got a small value of Null deviation (388.36 on 309 degrees of freedom), which implies that our model is a good fit.
+    + Residual Deviance: The Residual Deviance has reduced by 36.76 with a loss of 5 degrees of freedom. Though it is a significant reduction in deviance, we still got a small value of RD, thus, our model explains the data really well.
+    + Number of Fisher Scoring iterations: 4.
 
 + AIC (Akaike Information Criteria): We got AIC = 363.6, which is relatively small. Thus, we can conclude our model is closer to the truth.
 + Null deviance: We got a small value of Null deviation (388.36 on 309 degrees of freedom), which implies that our model is a good fit.
