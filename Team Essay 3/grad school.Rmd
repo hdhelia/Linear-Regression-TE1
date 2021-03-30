@@ -268,7 +268,7 @@ ggcorr(corr,
     color = "grey50") # Color of the label
 ```
 
-We find a weak correlation between the variables but we correctly observe that gpa and gre have a positive correlation with admittance, whereas rank has a neggative correlation with all other variables.
+We find a weak correlation between the variables but we correctly observe that gpa and gre have a positive correlation with admittance, whereas rank has a negative correlation with all other variables.
 
 ### Train and test set
 
