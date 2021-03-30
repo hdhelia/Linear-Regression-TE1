@@ -301,7 +301,7 @@ The code below estimates a logistic regression model using the glm (generalized 
 
 ```{r}
 logit <- glm( admit ~ gre + gpa + rank, 
-              data = data_train, 
+              data = data_train, na.action="na.exclude", 
               family = binomial(link='logit'))
 logit
 ```
@@ -325,13 +325,16 @@ The logistic regression coefficients give the change in the log odds of the outc
 ### Regression line
 
 ```{r, echo=FALSE, results='hide'}
+
+
 # save the coefficient values so we can use them in the equations
 b0 <- logit$coef[1] # intercept
 gre <- logit$coef[2]
-gpa <- -logit$coef[3]
+gpa <- logit$coef[3]
 rankhigh <- logit$coef[4]
 rankmedium <- logit$coef[5]
 ranklow <- logit$coef[6]
+
 # The GRE range we set here will determine the range on the 
 # x-axis of the final plot
 gre_range <- seq(from=min(data_train$gre), to=max(data_train$gre), by=.01)
@@ -350,24 +353,35 @@ ref_logits <- b0 +
   rankhigh*0 + 
   rankmedium*0 + 
   ranklow * 0
+  
+
+
+
 high_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*1 + 
   rankmedium*0 + 
   ranklow * 0
+
+
+
 medium_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
   rankmedium*1 + 
   ranklow * 0
+
+
+
 low_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
   rankmedium*0 + 
-  ranklow *1
+  ranklow * 1
+ 
 # Compute the probabilities (this is what will actually get plotted):
 a_probs <- exp(ref_logits)/(1 + exp(ref_logits))
 b_probs <- exp(high_logits)/(1 + exp(high_logits))
@@ -376,16 +390,19 @@ d_probs <- exp(low_logits)/(1 + exp(low_logits))
   
  
 plot.data <- data.frame(reference=a_probs, high=b_probs, medium=c_probs, low=d_probs, GRE=gre_range)
-plot.data <- gather(plot.data, key=group, value=prob, reference:low)
+plot.data <- gather(plot.data, key=rank, value=prob, reference:low)
 head(plot.data)
 ```
 
 ```{r}
 # asking it to set the color by the variable "group" is what makes it draw three different lines
-ggplot(plot.data, aes(x=GRE, y=prob, color=group), size = 0.1) +
+ggplot(plot.data, aes(x=GRE, y=prob, color=rank), size = 0.1) +
   geom_line(lwd=1) + 
   labs(x="GRE", y="P(Admission rate)", title="Probability of getting accepted") 
 ```
+
+Based on the logistic curve of the probability an individual getting accepted to their desire institution respect to their GRE, we can infer that individuals with higher GRE score have higher chance to get into their desire institute compare to those with lower GRE.
+
 
 ### Model Assessment 
 
@@ -480,7 +497,7 @@ knitr::include_graphics("confusion_matrix.JPG")
 
 To compute the confusion matrix, you first need to have a set of predictions so that they can be compared to the actual targets.
 
-```{r}
+```{r, echo=FALSE, results='hide'}
 # Compute the prediction on the test set. Set type = 'response' 
 # to compute the response probability
 predict <- data_test
