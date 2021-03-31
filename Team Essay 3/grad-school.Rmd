@@ -3,8 +3,8 @@ title: "Logistic Regression"
 author: "Dhruvi, Vi, Huy, Harshal"
 date: "3/24/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ## (1) INTRODUCTION
@@ -26,7 +26,7 @@ knitr::include_graphics("sigmoid.jpg")
 
 The output of the function is always between 0 and 1. 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width = "400px"}
 knitr::include_graphics("graph.png")
 ```
 
@@ -65,7 +65,7 @@ We used a hypothetical data set produced by UCLA to study the effect of certain 
 + prestige of the undergraduate institution ranks 1 to 4. 1 being most prestigious and 4 being the least.
 + admission into graduate school. The response variable, 0 (don't admit) / 1 (admit), is a binary variable.
 
-`The objective is to predict whether one will get admission into an institution given their grades and the prestige of their undergrad institution`.
+*The objective is to predict whether one will get admission into an institution given their grades and the prestige of their undergrad institution.*
 
 **Importing the data file**
 
@@ -83,7 +83,7 @@ admit_data
 
 **Cleaning and preparing the dataset for logistic regression**
 
-#### Checking for Continuous variables
+**1. Checking for Continuous variables**
 
 In the first step, you can see the distribution of the continuous variables.
 
@@ -94,11 +94,12 @@ continuous <-select_if(admit_data, is.numeric)
 # Print the summary statistic
 summary(continuous)
 ```
+
 From the above table, you can see that the data has totally different scales and there's large outliers present in `gre` (i.e. look at the min and first quartile values)
 
 You can deal with it following two steps:
 
-**1. Plot the distribution of count**
+**1a. Plot the distribution of count**
 
 ```{r}
 # Histogram with kernel density curve
@@ -122,18 +123,22 @@ ggplot(admit_drop, aes(x = gre)) +
     geom_density(alpha = .2, fill = "#FF6666")
 ```
 
-**2: Standardize the continuous variables**
+**1b: Standardize the continuous variables**
 
 You can standardize each column to improve the performance because your data does not have the same scale. Mutate the numeric colums and then scale them.
 
+This was the originalchoice however it made eading the data and fraphs a little harder with the standardized scales so we reverted to the original non-standardized values.
+
 ```{r}
 admit_rescale <- admit_drop
+
 # admit_rescale <- admit_drop %>%
 # mutate_if(is.numeric, funs(as.numeric(scale(.))))
+
 head(admit_rescale)
 ```
 
-#### Checking factor variables
+**2. Checking factor variables**
 
 This step has two objectives:
 
@@ -161,6 +166,7 @@ graph <- lapply(names(factor),
 		theme(axis.text.x = element_text(angle = 90)))
 graph # print the 2 graphs we produced
 ```
+
 We can observe from the above graphs that majority of the individuals didn't get into the grad schools. And most of the applicants seem to have come from a high ranked institution. But we don't see how these two graphs relate so we do further analysis in the next few sections.
 
 ### Visualization
@@ -173,10 +179,9 @@ We can check the number of instances within each group:
 table(admit_rescale$rank)
 ```
 
-
 It is time to check some statistics about our target variables. In the graph below, we see that the greater the rank of the institution a student did their undergrad from, the higher is their chance of getting admitted.
 
-```{r}
+```{r, echo = FALSE}
 ggplot(admit_rescale, aes(x = rank, fill = admit)) +
     geom_bar(position = "fill") +
     theme_classic()
@@ -184,7 +189,7 @@ ggplot(admit_rescale, aes(x = rank, fill = admit)) +
 
 In this net plot we see, through the use of standardized gpa and gre values, the chances of being admitted. From what we see, it seems that a higher GPA and a higher GRE score increases the chnaces of admission. WHich one has more effect cannot really be determined in this plot.
 
-```{r}
+```{r, echo=FALSE}
 gre_g <- ggplot(admit_rescale, aes(x = admit, y = gre)) +
     geom_boxplot() +
     stat_summary(fun = mean,
@@ -205,18 +210,20 @@ ggarrange(gre_g, gpa_g,
 
 Next we visualize the density distributions for the gre and gpa scores categorized by rank. 
 We observe that the low rank and medium ranks are concentrated around the lower GRE scores; whereas, the GRE scores of students from high/very high ranked institutions are concentrated around the greater GRE scores. In other words, the plot is skewed to the left for low ranked institutes vs more even distribution for high ranks.
-Wedon't observe many differences for the GPA values except for the tail on the right where you observe that the higher ranks are more evenly distributed over the higher gpa values which isn't the same for low ranked institutes.
+We don't observe many differences for the GPA values except for the tail on the right where you observe that the higher ranks are more evenly distributed over the higher gpa values which isn't the same for low ranked institutes.
 
-```{r}
+```{r, echo = FALSE}
 # Plot distribution working time by education
 gre_line <- ggplot(admit_rescale, aes(x = gre)) +
   geom_density(aes(color = rank), alpha = 0.5) +
   theme_classic() +
   facet_wrap(~rank)
+
 gpa_line <- ggplot(admit_rescale, aes(x = gpa)) +
   geom_density(aes(color = rank), alpha = 0.5) +
   theme_classic()+
   facet_wrap(~rank)
+
 ggarrange(gre_line, gpa_line, 
           ncol = 1, nrow = 2)
 ```
@@ -226,9 +233,9 @@ We created a linear regression model comparing gre and gpa and their impact on a
   2. Regardless of admittance, GRE and GPA tend to be positively correlated meaning the higher the GPA, the higher the GRE tends to be for individuals.
   3. It can also be observed that individuals with low gpa scores, higher GRE scores can increase your chances of admittance. 
   
-It may even be hypothesized that GRE scores make a bigger impact on admittance than GPA. For the same GPA, Having a 
+It may even be hypothesized that GRE scores make a bigger impact on admittance than GPA. For the same GPA, Having a higher GRE score may get you admitted into the graduate school. Mind you this doesn't take into consideration the rank of undergrad institutions.
   
-```{r}
+```{r, echo = FALSE}
 ggplot(admit_rescale, aes(x = gpa, y = gre)) +
     geom_point(aes(color = admit),
         size = 0.5) +
@@ -236,18 +243,6 @@ ggplot(admit_rescale, aes(x = gpa, y = gre)) +
         formula = y~poly(x, 2),
         se = TRUE,
         aes(color = admit)) +
-    theme_classic()
-```
-
-```{r, echo=FALSE, results='hide'}
-#Not using this plot; unnecessary
-ggplot(admit_rescale, aes(x = gpa, y = gre)) +
-    geom_point(aes(color = rank),
-        size = 0.5) +
-    stat_smooth(method = 'lm',
-        formula = y~poly(x, 2),
-        se = FALSE,
-        aes(color = rank)) +
     theme_classic()
 ```
 
@@ -292,7 +287,6 @@ dim(data_train)
 dim(data_test)
 ```
 
-
 ## (3) ANALYSIS
 
 ### Computation
@@ -305,7 +299,8 @@ logit <- glm( admit ~ gre + gpa + rank,
               family = binomial(link='logit'))
 logit
 ```
-This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**, **Rankhigh**, *RankMedium**, and **Ranklow** variables.
+
+This result shows the intercept (b0) and the beta coefficients (b1, b2, b3, b4 ,b5) for the **GRE**, **GPA**, **rankhigh**, **rankmedium**, and **ranklow** variables.
 
 ### Interpretation: 
 
@@ -325,8 +320,6 @@ The logistic regression coefficients give the change in the log odds of the outc
 ### Regression line
 
 ```{r, echo=FALSE, results='hide'}
-
-
 # save the coefficient values so we can use them in the equations
 b0 <- logit$coef[1] # intercept
 gre <- logit$coef[2]
@@ -354,9 +347,6 @@ ref_logits <- b0 +
   rankmedium*0 + 
   ranklow * 0
   
-
-
-
 high_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
@@ -364,16 +354,12 @@ high_logits <- b0 +
   rankmedium*0 + 
   ranklow * 0
 
-
-
 medium_logits <- b0 + 
   gre*gre_range + 
   gpa*gpa_val + 
   rankhigh*0 + 
   rankmedium*1 + 
   ranklow * 0
-
-
 
 low_logits <- b0 + 
   gre*gre_range + 
@@ -394,15 +380,17 @@ plot.data <- gather(plot.data, key=rank, value=prob, reference:low)
 head(plot.data)
 ```
 
-```{r}
+```{r, echo=FALSE}
 # asking it to set the color by the variable "group" is what makes it draw three different lines
 ggplot(plot.data, aes(x=GRE, y=prob, color=rank), size = 0.1) +
   geom_line(lwd=1) + 
   labs(x="GRE", y="P(Admission rate)", title="Probability of getting accepted") 
 ```
 
-Based on the logistic curve of the probability an individual getting accepted to their desire institution respect to their GRE, we can infer that individuals with higher GRE score have higher chance to get into their desire institute compare to those with lower GRE.
+Based on the logistic curve of the probability an individual getting accepted to their desired institution w.r.t to their GRE, we can infer that:
 
++ individuals with higher GRE score have a higher chance to get into their desire institute compare to those with lower GRE.
++ We also see that the more prestigious the undergrad institute that one graduated from, the higher is the probability of them getting accepted to grad school. We see a wide gap between the medium and low ranked groups and the high ranked group.
 
 ### Model Assessment 
 
@@ -411,15 +399,16 @@ In the previous sections, we came up with a logistic regression model of admitta
 **Admit** = (-4.57174) + 0.002445 * GRE + 0.9648 * GPA + 
 (-0.71967) * rankhigh + (-1.5836) * rankmedium + (-1.5125) * ranklow
 
-
+We observed trends that how various variables such as gre, rank, etc. affect the probability of admittance; however, it is possible that the model can be improved and we need to do more in depth statistical analysis of the model to see how well it fits the data. In the next few sections we will further assess the model based on the summary and various analysis methods.
 
 ### Model Summary
 
 We start by displaying the statistical summary of the model using the R function summary():
 
-```{r}
+```{r, echo=FALSE}
 summary(logit)
 ```
+
 The performance of a logistic regression is evaluated with specific key metrics.
 
 The summary outputs shows 7 components, including:
@@ -451,6 +440,7 @@ The coefficients table, in the model statistical summary, shows:
 ```{r}
 summary(logit)$coef
 ```
+
 In addition, we can also perform an ANOVA Chi-square test to check the overall effect of variables on the dependent variable.
 
 ```{r}
@@ -497,7 +487,7 @@ knitr::include_graphics("confusion_matrix.JPG")
 
 To compute the confusion matrix, you first need to have a set of predictions so that they can be compared to the actual targets.
 
-```{r, echo=FALSE, results='hide'}
+```{r, results='hide'}
 # Compute the prediction on the test set. Set type = 'response' 
 # to compute the response probability
 predict <- data_test
@@ -538,7 +528,7 @@ In such situation, it is preferable to have a more concise metric. We can look a
 
 Precision looks at the accuracy of the positive prediction. Recall is the ratio of positive instances that are correctly detected by the classifier;
 
-You can construct two functions to compute these two metrics
+You can construct two functions to compute these two metrics:
 
 ```{r}
 precision <- function(matrix) {
@@ -590,8 +580,9 @@ The false positive rate is the ratio of negative instances that are incorrectly 
 
 We can plot the ROC with the prediction() and performance() functions.
 
-```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(Metrics)
+
 ROCRpred <- prediction(predict$rankP, predict$admit)
 ROCRperf <- performance(ROCRpred, 'tpr', 'fpr')
 plot(ROCRperf, colorize = TRUE, text.adj = c(-0.2, 1.7))
