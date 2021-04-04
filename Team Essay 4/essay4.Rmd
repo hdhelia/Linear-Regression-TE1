@@ -1,0 +1,93 @@
+---
+title: 'Essay 4: KNN and Decision trees'
+author: "Dhruvi, Vi, Huy, Harshal"
+date: "4/16/2021"
+output: html_document
+---
+
+## (1) INTRODUCTION
+
+### KNN and Decision trees
+
+
+### Loading R packages
+
+```{r, results=FALSE, warning=FALSE, message=FALSE}
+library("dplyr")
+library("stats")
+library("GGally")
+library("ggpubr")
+library("tidyverse") #for data manipulation and visualization
+```
+
+## (2) DATA DESCRIPTION
+
+### Examples of data and problem
+
+**Iris Flower Dataset**
+
+
+
++ 
++ 
++ 
++ 
++ 
+
+`The objective is to.`
+
+**Importing the data file**
+
+```{r, echo=TRUE, results='hide'}
+
+```
+
+
+
+### Visualization
+
+
+
+## (3) ANALYSIS
+
+### Computation
+
+
+
+### Interpretation of Model: 
+
+
+
+### Estimates
+
+
+  
+## (4) MODEL EVALUATION
+
+### Regression line
+
+
+### Model Assessment 
+
+
+
+### Model Summary
+
+
+
+### Coefficients significance
+
+
+
+### Prediction and Model accuracy
+
+
+## (5) CONCLUSION
+
+### Summary
+
+
+
+## (6) REFERENCES
+
+ 
