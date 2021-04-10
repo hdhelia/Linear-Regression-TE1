@@ -10,14 +10,18 @@ output: html_document
 ### KNN and Decision trees
 
 
+
 ### Loading R packages
 
 ```{r, results=FALSE, warning=FALSE, message=FALSE}
 library("dplyr")
+library("readr")
 library("stats")
 library("GGally")
 library("ggpubr")
 library("tidyverse") #for data manipulation and visualization
+library("class")
+library("gmodels")
 ```
 
 ## (2) DATA DESCRIPTION
@@ -26,39 +30,181 @@ library("tidyverse") #for data manipulation and visualization
 
 **Iris Flower Dataset**
 
+The dataset was taken from the UCI Machine Learning Repository and  includes three iris species with 50 samples each as well as some properties about each flower. One flower species is linearly separable from the other two, but the other two are not linearly separable from each other.
 
+The columns are as follows:
 
-+ 
-+ 
-+ 
-+ 
-+ 
++ SepalLengthCm = Length of the sepal (in cm)
++ SepalWidthCm = Width of the sepal (in cm)
++ PetalLengthCm = Length of the petal (in cm)
++ PetalWidthCm = Width of the petal (in cm)
++ Species = Species name
 
-`The objective is to.`
+`The objective is to predict the species of the Iris flower given the sepal and petal characteristics. We will implement the KNN algorithm to interpret those results.`
 
 **Importing the data file**
 
 ```{r, echo=TRUE, results='hide'}
+iris <- read.csv("Iris.csv", stringsAsFactors = TRUE) %>% 
+  select(-"Id") %>% 
+  drop_na() %>% #remove NA values
+  distinct() # remove duplicated rows 
 
+summary(iris)
+
+set.seed(99) #randomize the dataset to avoid heavily discarding one species during data split
+rows <- sample(nrow(iris)) 
+iris <- iris[rows, ] # this is the randomized data set with jumbled rows
 ```
 
+**Normalize the numeric columns**
 
+This feature is of paramount importance since the scale used for the values for each variable might be different. The best practice is to normalize the data and transform all the values to a common scale.
+
+```{r}
+normalize <- function(x) {
+  return ( (x - min(x)) / (max(x) - min(x)) )
+}
+```
+
+Once we run this code, we are required to normalize the numeric features in the data set. Instead of normalizing each of the 4 individual variables we use lappy to apply the function to all variables at once:
+
+```{r}
+iris_norm <- as.data.frame(lapply(iris[1:4], normalize))
+```
+
+We start from the 1st variable (after removing id), SepalLengthCm. We only normalize upto the 4th column since the 5th col, species, is not numeric. The function lapply() applies normalize() to each feature in the data frame. The final result is stored to iris_norm data frame using as.data.frame() function. 
+
+```{r}
+# you can check to see if it's been properly normalized
+summary(iris_norm)
+```
+
+**Create the test and train Data**
+
+The KNN algorithm is applied to the training data set and the results are verified on the test data set.
+
+For this, we divide the data set into 2 portions in the ratio of 103:44 for the training and test data set respectively.
+
+We shall divide the iris_norm data frame into train and test data frames:
+
+```{r}
+iris.train<- iris_norm[1:103,]
+iris.test<- iris_norm[104:147,]
+```
+
+A blank value in each of the above statements indicate that all rows and columns should be included.
+
+Our target variable is ‘Species’ which we have not included in our training and test data sets. 
+
+This following code takes the species in column 5 of the iris_rand data frame and in turn creates iris_train_labels and iris_test_labels data frame.
+
+```{r}
+iris_train_labels <- iris[1:103, 5]
+iris_test_labels <- iris[104:147, 5]
+```
 
 ### Visualization
 
+We visualize how the sepal and petal charcateristics differ based on the Iris species in the following graphs.
 
+In the following graph comparing the Sepal characteristics in the different species, 
+
++ we observe that virginia tends to have a higher length of the other two and setosa has the shortest sepal length.
++ we also observe that setosa tends to have a highest width of the three species while versicolor has the shortest sepal width.
+
+```{r}
+A <- iris %>% 
+  ggplot() +
+  geom_boxplot(aes(x=Species, y=SepalLengthCm, fill=Species), 
+               show.legend = FALSE) +
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank())
+
+B <- iris %>% 
+  ggplot() +
+  geom_boxplot(aes(x=Species, y=SepalWidthCm, fill=Species)) +
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank(),
+    legend.position = "bottom",
+    legend.direction = "horizontal")
+
+ggarrange(A, B, 
+          ncol = 2, nrow = 1)
+```
+In the following graph comparing the Petal charcateristics in the different species, we observe that virginia tends to have the highest Petal length and width of while setosa has the shortest.
+We can also determine the range that each characteristic could fall between.
+
+```{r}
+C <- iris %>% 
+  ggplot() +
+  geom_boxplot(aes(x=Species, y=PetalLengthCm, fill=Species), 
+               show.legend = FALSE) +
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank())
+
+D <- iris %>% 
+  ggplot() +
+  geom_boxplot(aes(x=Species, y=PetalWidthCm, fill=Species)) +
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank(), 
+    legend.position = "bottom",
+    legend.direction = "horizontal")
+
+ggarrange(C, D,
+          ncol = 2, nrow = 1)
+```
 
 ## (3) ANALYSIS
 
-### Computation
+### Model Computation
 
+We need to use the knn () function to train a model. It identifies the k-nearest neighbors using Euclidean distance where k is a user-specified number.
 
+**Finding the best k value**
+
+One of the most commonly used ways to find the optimal K value is to calculate the square root of the total number of observations in the data set. This square root will give you the ‘K’ value. 
+
+So first we find the dimensions of our training data set and then find the square root of that value to get an approx k-value.
+
+```{r}
+size <- NROW(iris_train_labels) #size of training data
+size
+sqrt(size) # the k-value
+```
+
+We find that the size of our training data is 130 which gives us a square root of 10.14998. Let's then create 2 KNN models using k=10 and k=11.
+
+```{r}
+#library(class)
+
+iris_k10_pred <- knn(
+  train = iris.train,
+  test = iris.test,
+  cl = iris_train_labels,
+  k=10
+)
+
+iris_k11_pred <- knn(
+  train = iris.train, 
+  test = iris.test, 
+  cl = iris_train_labels,
+  k=11
+)
+
+iris_k3_pred <- knn(
+  train = iris.train,
+  test = iris.test,
+  cl = iris_train_labels,
+  k=3
+)
+```
 
 ### Interpretation of Model: 
-
-
-
-### Estimates
 
 
   
