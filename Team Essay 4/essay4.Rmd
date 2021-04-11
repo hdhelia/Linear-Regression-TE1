@@ -11,11 +11,11 @@ output: html_document
 
 k nearest neighbors (kNN) is a simple algorithm that stores all available cases and classifies new cases by a majority vote of its k neighbors. This algorithms segregates unlabeled data points into well defined groups.
 
-**Method to find appropriate k value
+**Method to find appropriate k value**
 
 Choosing the number of nearest neighbors i.e. determining the value of k plays a significant role in determining the efficacy of the model. Thus, selection of k will determine how well the data can be utilized to generalize the results of the kNN algorithm. A large k value has benefits which include reducing the variance due to the noisy data; the side effect being developing a bias due to which the learner tends to ignore the smaller patterns which may have useful insights.
 
-**Example of kNN algorithm
+**Example of kNN algorithm**
 
 The following table shows the rating of 10 ’drinking items’ which are rated on two parameters ("sweetness" and "fizziness") on a scale of 1 to 10:
 ```{r}
