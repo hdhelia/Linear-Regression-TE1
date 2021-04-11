@@ -158,6 +158,33 @@ D <- iris %>%
 ggarrange(C, D,
           ncol = 2, nrow = 1)
 ```
+Sepal width and length appear to be correlated but each species is different. Specifically, there’s a lot of overlap between the versicolor and virginica species. The virginica sepal length seems to be a bit longer but otherwise there's quite a lot of overlap.
+
+```{r}
+ggplot(data = iris, 
+       aes(x = SepalLengthCm, y = SepalWidthCm, color = Species)) + 
+  geom_point() + 
+  geom_smooth()
+
+ggplot(data = iris, aes(x = SepalLengthCm, y = SepalWidthCm)) + 
+  geom_point(size = 3) + 
+  geom_smooth(size = 1, se = FALSE) + 
+  facet_grid(rows = vars(Species))
+```
+
+The petal lengths and widths, however, don't show much correlation. Each species seems one up the other.
+
+```{r}
+ggplot(data = iris, aes(x = PetalLengthCm, y = PetalWidthCm)) + 
+  geom_point(size = 3) + 
+  geom_smooth(size = 1, se = FALSE) + 
+  facet_grid(rows = vars(Species))
+
+ggplot(data = iris, 
+       aes(x = PetalLengthCm, y = PetalWidthCm, color = Species)) + 
+  geom_point() + 
+  geom_smooth()
+```
 
 ## (3) ANALYSIS
 
@@ -166,6 +193,10 @@ ggarrange(C, D,
 We need to use the knn () function to train a model. It identifies the k-nearest neighbors using Euclidean distance where k is a user-specified number.
 
 **Finding the best k value**
+
++ k=1: The model is too specific and not generalized well. It also tends to be sensitive to noise. The model accomplishes a high accuracy on train set but will be a poor predictor on new, previously unseen data points. Therefore, we are likely to end up with an overfit model.
+
++ k=100: The model is too generalized and not a good predictor on both train and test sets. This situation is known as under-fitting.
 
 One of the most commonly used ways to find the optimal K value is to calculate the square root of the total number of observations in the data set. This square root will give you the ‘K’ value. 
 
@@ -177,16 +208,16 @@ size
 sqrt(size) # the k-value
 ```
 
-We find that the size of our training data is 130 which gives us a square root of 10.14998. Let's then create 2 KNN models using k=10 and k=11.
+We find that the size of our training data is 103 which gives us a square root of 10.14998. Let's then create 2 KNN models using k=9 and k=11 since using odd values for k is the common practice. This is because KNN predicts through a majority vote and odd k-values help avoid having ties.
 
 ```{r}
 #library(class)
 
-iris_k10_pred <- knn(
+iris_k9_pred <- knn(
   train = iris.train,
   test = iris.test,
   cl = iris_train_labels,
-  k=10
+  k=9
 )
 
 iris_k11_pred <- knn(
@@ -202,10 +233,55 @@ iris_k3_pred <- knn(
   cl = iris_train_labels,
   k=3
 )
+
+100 * sum(iris_test_labels == iris_k9_pred)/NROW(iris_test_labels)
+
+100 * sum(iris_test_labels == iris_k11_pred)/NROW(iris_test_labels)
 ```
+
+KNN function takes in as arguments: 
+
++ the train data which is of dimension 103, 
++ the test data of dim 44, 
++ class which defines the factors of true classifications aka species values of the training set
++ k value = the number of neighbors considered; value determined by the user, and 
+
+returns a factor value of predicted labels for each of the examples in the test data set which is then assigned to the data frames iris_k9_pred, iris_k11_pred. 
 
 ### Interpretation of Model: 
 
+Here we instantiate three KNN classifiers with k=9, 11 and 3 respectively. The model takes input the training data, testing data and the labels (species of the flower), and outputs the percentage of successfully predicted data points in the test set.
+
+The KNN model learns on the training data by essentially memorizing the nearest neighbors around each train data point (where the closeness is defined by the Euclidean distance), and evaluates on the testing set by doing a majority vote on values of the neighbors.
+
+Evidently we would observe different predictive behaviors given different sizes of 'k', because a smaller k value tends to make the model more easily influenced by noises in the training data hence over-fitting (result of high variance). But given the well-constructed, relatively simple Iris dataset and a small amount of test data, such differences may not appear very apparent when k values only vary marginally (such as between 11 and 13).
+
+In the next sections, we will calculate and understand the accuracy of our model by comparing the predicted values with original testing data set’s values.
+
+```{r}
+KNN_func <- function(train, test, train.label, k){
+  return(knn(train, test, train.label, k))
+}
+
+accuracy <- function(train, test, train.label, test.label) {
+  accuracy_val <- c()
+  for (k in 1:30) {
+    Knn.pred <- KNN_func(train, test, train.label, k)
+    accuracy_val[k] <- 100 * sum(test.label == Knn.pred)/NROW(test.label)
+  }
+
+  return(accuracy_val)
+}
+```
+
+```{r}
+k <- 1:30
+acc <- accuracy(iris.train, iris.test, iris_train_labels, iris_test_labels)
+
+ggplot(mapping = aes(x=k, y=acc)) +
+  geom_point() +
+  geom_line()
+```
 
   
 ## (4) MODEL EVALUATION
