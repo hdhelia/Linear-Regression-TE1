@@ -332,22 +332,38 @@ ggplot(mapping = aes(x=k, y=acc)) +
   
 ## (4) MODEL EVALUATION
 
-### Regression line
+### Model Summary and Model Assessment 
 
+Using the Iris Flower Data set for this essay, our goal was to create a KNN model that will be able to predict the species of the flowers based on several parameters like the length and width of the sepals and petals. Taking the square root of the number of training data sets that we have (103) we got the value of K as approximately something >10. However, since the value of K works best when its odd, we decided to choose K as 9 and 11. We also chose K as 3 to analyze the case when the value of K is less. 
 
-### Model Assessment 
+Normally the accuracy of the models increase with the increase in the number of data sets. However, our model gives a great accuracy with such a small training data set(103), tested on the remaining 44 data sets. 
 
-
-
-### Model Summary
-
-
-
-### Coefficients significance
-
-
+The KNN model developed above can successfully predict the species of the flower based on various characteristics of the flowers. In the following sections, we will evaluate the confusion matrix which gives us a better understanding of how the model performed in the above experiment and what is the accuracy of each of the models with different K values.
 
 ### Prediction and Model accuracy
+
+We have developed three KNN models where the values of K are (9, 11 and 3). So in this section we will be evaluating these models and looking at the accuracy of each of the models using the confusion matrices of each of the models. 
+
+```{r}
+CrossTable(x = iris_k9_pred ,y = iris_test_labels)
+CrossTable(x = iris_k11_pred ,y = iris_test_labels)
+CrossTable(x = iris_k3_pred ,y = iris_test_labels)
+```
+
+The important insights from the above tables are the number of species that were predicted correctly out of the 44 total observations that we have.
+
+Consider each of the three models that we evaluated, we get  :
+
+Model 1 (k=9) : 
+Total number of correct species predicted = 15 + 12 + 15 = 42 out of 44 test data.
+
+Model 2 (k=11) : 
+Total number of correct species predicted = 15 + 12 + 16 = 43 out of 44 test data.
+
+Model 3 (k=3) : 
+Total number of correct species predicted = 15 + 11 + 16 = 42 out of 44 test data.
+
+Looking at the correct predictions we can calculate the accuracy of each of our models being 95.45, 97.72 and 95.45% respectively. This shows that the KNN model works really well with the training data set on which the model was trained and predicts the flower species will great accuracy. 
 
 
 ## (5) CONCLUSION
