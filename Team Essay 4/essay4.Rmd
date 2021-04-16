@@ -3,8 +3,8 @@ title: 'Essay 4: KNN and Decision trees'
 author: "Dhruvi, Vi, Huy, Harshal"
 date: "4/16/2021"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ## (1) INTRODUCTION
