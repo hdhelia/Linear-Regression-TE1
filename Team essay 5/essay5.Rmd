@@ -14,46 +14,149 @@ output: html_document
 
 ```{r, results=FALSE, warning=FALSE, message=FALSE}
 library("dplyr")
-library("readr")
-library("readxl")
-library("stats")
-library("GGally")
-library("ggpubr")
 library("tidyverse") #for data manipulation and visualization
+library("corrplot")
+library("animation")
+library("cluster")
+library("GGally")
+library("factoextra")
+library("ggcorrplot")
 ```
 
 ## (2) DATA DESCRIPTION
 
 ### Examples of data and problem
 
-**Dataset**
+**Wine Data set**
 
+These data are the results of a chemical analysis of wines grown in the same region in Italy but derived from three different cultivars. The analysis determined the quantities of 13 constituents found in each of the three types of wines. The dataset contains 13 attributes with 178 rows.
 
+1) Alcohol
+2) Malic acid
+3) Ash
+4) Alcalinity of ash
+5) Magnesium
+6) Total phenols
+7) Flavanoids
+8) Nonflavanoid phenols
+9) Proanthocyanins
+10) Color intensity
+11) Hue
+12) OD280/OD315 of diluted wines
+13) Proline
 
-+ 
-+ 
-+ 
-+ 
-+ 
-
-`The objective is to.`
+*Our goal is to try to group similar observations together and determine the number of possible clusters.*
 
 **Importing the data file**
 
-```{r, echo=TRUE, results='hide'}
+```{r, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
 
+wine.cols = c("Alcohol", "Malic_Acid", "Ash", "Ash_Alcanity", "magnesium", "Total_Phenols", "Flavanoids",	"Nonflavanoid_Phenols", "Proanthocyanins", "Color_Intensity", "Hue", "OD280", "Proline")
+
+wine <- read.table("wine.data", sep = ",", row.names=NULL, col.names=wine.cols, nrows=178)[ ,2:14]
+
+wine <- wine %>% 
+  drop_na() %>% #remove NA values
+  distinct() # remove duplicated rows
+
+summary(wine)
 ```
-
-
 
 ### Visualization
 
+First we plot the histogram of each attribute. The idea here is to visualize the data distribution for each feature.
 
+```{r}
+# Histogram for each Attribute
+wine %>%
+  gather(Attributes, value, 1:13) %>%
+  ggplot(aes(x=value, fill=Attributes)) +
+  geom_histogram(colour="black", show.legend=FALSE) +
+  facet_wrap(~Attributes, scales="free_x") +
+  labs(x="Values", y="Frequency",
+       title="Wines Attributes - Histograms") +
+  theme_bw()
+```
+
+```{r}
+wine %>%
+  gather(Attributes, values) %>%
+  ggplot(aes(x=reorder(Attributes, values, FUN=median), y=values, fill=Attributes)) +
+  geom_boxplot(show.legend=FALSE) +
+  facet_wrap(~Attributes, scales="free", nrow = 4) +
+  labs(title="Wines Attributes - Boxplots") +
+  theme_bw() +
+  theme(axis.title.y=element_blank(),
+        axis.title.x=element_blank()) 
+```
+
+```{r}
+ggcorr(wine,
+    nbreaks = 10,
+    label = TRUE,
+    label_size = 3,
+    color = "grey50")
+```
+
+
+**Data Normalization**
+
+We need to normalize the data to express it in the same range of values.
+
+```{r}
+winesNorm <- as.data.frame(scale(wine))
+
+summary(winesNorm)
+```
 
 ## (3) ANALYSIS
 
 ### Computation
 
+```{r}
+distance <- get_dist(winesNorm) 
+fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + 
+  theme(
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+  )
+```
+
+```{r}
+k2 <- kmeans(winesNorm, centers = 3, nstart = 25)
+
+k2
+
+fviz_cluster(k2, data = winesNorm)
+```
+
+```{r}
+set.seed(123)
+
+# function to compute total within-cluster sum of square 
+wss <- function(k) {
+  kmeans(winesNorm, k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+
+plot(k.values, wss_values,
+       type="b", pch = 19, frame = FALSE, 
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+```
+
+```{r}
+set.seed(123)
+
+fviz_nbclust(winesNorm, kmeans, method = "wss")
+```
 
 
 ### Interpretation of Model: 
@@ -88,4 +191,12 @@ library("tidyverse") #for data manipulation and visualization
 
 ## (6) REFERENCES
 
- 
+https://stat.ethz.ch/R-manual/R-patched/library/datasets/html/USArrests.html
+
+https://www.kaggle.com/xvivancos/tutorial-clustering-wines-with-k-means
+
+https://www.kaggle.com/rodrigofragoso/explained-k-means-pca-visualization
+
+https://uc-r.github.io/kmeans_clustering
+
+https://www.guru99.com/r-k-means-clustering.html
