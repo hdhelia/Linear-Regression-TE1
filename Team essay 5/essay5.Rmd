@@ -150,7 +150,7 @@ K-means algorithm can be summarized as follows:
 We can compute k-means in R with the *kmeans* function. Here will group the data into two clusters (*centers = 2*). The *kmeans* function also has an *nstart* option that attempts multiple initial configurations and reports on the best one. For example, adding *nstart = 25* will generate 25 initial configurations. This approach is often recommended.
 
 ```{r}
-k2 <- kmeans(wine, centers = 2, nstart = 25)
+k2 <- kmeans(winesNorm, centers = 2, nstart = 25)
 str(k2)
 ```
 The output of *kmeans* is a list with several bits of information. The most important being:
@@ -174,20 +174,20 @@ We can view our results by using *fviz_cluster*. This provides a nice illustrati
 
 ```{r}
 
-fviz_cluster(k2,data=wine)
+fviz_cluster(k2,data=winesNorm)
 ```
 Because the number of clusters (k) must be set before we start the algorithm, it is often advantageous to use several different values of k and examine the differences in the results. We can execute the same process for 3, 4, and 5 clusters, and the results are shown in the figure:
 
 ```{r}
-k3 <- kmeans(wine, centers = 3, nstart = 25)
-k4 <- kmeans(wine, centers = 4, nstart = 25)
-k5 <- kmeans(wine, centers = 5, nstart = 25)
+k3 <- kmeans(winesNorm, centers = 3, nstart = 25)
+k4 <- kmeans(winesNorm, centers = 4, nstart = 25)
+k5 <- kmeans(winesNorm, centers = 5, nstart = 25)
 
 # plots to compare
-p1 <- fviz_cluster(k2, geom = "point", data = wine) + ggtitle("k = 2")
-p2 <- fviz_cluster(k3, geom = "point",  data = wine) + ggtitle("k = 3")
-p3 <- fviz_cluster(k4, geom = "point",  data = wine) + ggtitle("k = 4")
-p4 <- fviz_cluster(k5, geom = "point",  data = wine) + ggtitle("k = 5")
+p1 <- fviz_cluster(k2, geom = "point",  data = winesNorm) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = winesNorm) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = winesNorm) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = winesNorm) + ggtitle("k = 5")
 
 library(gridExtra)
 grid.arrange(p1, p2, p3, p4, nrow = 2)
