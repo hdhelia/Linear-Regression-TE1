@@ -206,23 +206,63 @@ This visual assessment tells us where true delineations occur between clusters; 
   
 ## (4) MODEL EVALUATION
 
-### Regression line
+### Model Summary and Assessment 
 
+In this essay so far, we have been able to successfully create a k-means clustering model that will cluster chemically similar wines together that are grown in the same region of Italy but by three different cultivars. To start with, we visualized our wines data set and normalized it so that we don't have to depend on an arbitrary variable unit. After that, we successfully developed the k-means clustering model on the normalized data set using different values of 'k'.
 
-### Model Assessment 
+There are different methods of evaluating how our model performs like Elbow method, Silhouette method and Gap Statistics. However, for this essay we will just be using one of these methods to analyze which value of 'k' is the most optimal value for our data set. 
 
-
-
-### Model Summary
-
-
-
-### Coefficients significance
-
-
+In the next section, we will discuss about the optimal value of 'k' that will help in minimizing the total within-cluster variation using a method called the 'Elbow method'.
 
 ### Prediction and Model accuracy
 
+To calculate the optimal value of 'k', we will perform the following 'Elbow method' : 
+
+1. Compute clustering algorithm (e.g., k-means clustering) for different values of k. For instance, by varying k from 1 to 10 clusters
+2. For each k, calculate the total within-cluster sum of square (wss)
+3. Plot the curve of wss according to the number of clusters k.
+4. The location of a bend (knee) in the plot is generally considered as an indicator of the appropriate number of clusters.
+
+```{r}
+set.seed(123)
+
+# function to compute total within-cluster sum of square 
+wss <- function(k) {
+  kmeans(winesNorm, k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 1 to k = 15
+k.values <- 1:15
+
+# extract wss for 2-15 clusters
+wss_values <- map_dbl(k.values, wss)
+
+plot(k.values, wss_values,
+       type="b", pch = 19, frame = FALSE, 
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+```
+
+Looking at the plot above, we can see that **k=3 is the optimal value of k**. Hence, for our essay we will be using k=3 (3-means clustering method) to cluster similar chemically similar wines together based on the initial data set. 
+
+Just to confirm it using another plot, we use the wrapper function **fviz_nbclust()** that computes the 'Elbow method' using just one line of code. We can see the knee (bend) in the plot being at k=3. 
+
+
+```{r}
+set.seed(123)
+
+fviz_nbclust(winesNorm, kmeans, method = "wss")
+```
+
+Finally, just to visualize the case where k=3, we get the following clustering using our data set. 
+
+```{r}
+k2 <- kmeans(winesNorm, centers = 3, nstart = 25)
+
+k2
+
+fviz_cluster(k2, data = winesNorm)
+```
 
 ## (5) CONCLUSION
 
@@ -256,36 +296,7 @@ fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4
   )
 ```
 
-```{r}
-k2 <- kmeans(winesNorm, centers = 3, nstart = 25)
 
-k2
 
-fviz_cluster(k2, data = winesNorm)
-```
 
-```{r}
-set.seed(123)
 
-# function to compute total within-cluster sum of square 
-wss <- function(k) {
-  kmeans(winesNorm, k, nstart = 10 )$tot.withinss
-}
-
-# Compute and plot wss for k = 1 to k = 15
-k.values <- 1:15
-
-# extract wss for 2-15 clusters
-wss_values <- map_dbl(k.values, wss)
-
-plot(k.values, wss_values,
-       type="b", pch = 19, frame = FALSE, 
-       xlab="Number of clusters K",
-       ylab="Total within-clusters sum of squares")
-```
-
-```{r}
-set.seed(123)
-
-fviz_nbclust(winesNorm, kmeans, method = "wss")
-```
