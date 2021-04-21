@@ -118,6 +118,7 @@ summary(winesNorm)
 K-means clustering is the most commonly used unsupervised machine learning algorithm for partitioning a given data set into a set of k groups (i.e. k clusters), where k represents the number of groups pre-specified by the analyst. It classifies objects in multiple groups (i.e., clusters), such that objects within the same cluster are as similar as possible (i.e., high intra-class similarity), whereas objects from different clusters are as dissimilar as possible (i.e., low inter-class similarity). In k-means clustering, each cluster is represented by its center which corresponds to the mean of points assigned to the cluster.
 
 **The Basic Idea**
+
 The basic idea behind k-means clustering consists of defining clusters so that the total intra-cluster variation (known as total within-cluster variation) is minimized. There are several k-means algorithms available. The standard algorithm is the Hartigan-Wong algorithm (1979), which defines the total within-cluster variation as the sum of squared distances Euclidean distances between items and the corresponding centroid:
 \[
 W(C_k) = \sum_{x_i \in C_k}(x_i - \mu_k)^2 \tag{6}
@@ -136,32 +137,35 @@ tot.withiness = \sum^k_{k=1}W(C_k) = \sum^k_{k=1}\sum_{x_i \in C_k}(x_i - \mu_k)
 The total within-cluster sum of square measures the compactness of the clustering and we want it to be as small as possible.
 
 **K-means Algorithm**
+
 The first step when using k-means clustering is to indicate the number of clusters (k) that will be generated in the final solution. The algorithm starts by randomly selecting k objects from the data set to serve as the initial centers for the clusters. The selected objects are also known as cluster means or centroids. Next, each of the remaining objects is assigned to it's closest centroid, where closest is defined using the Euclidean distance between the object and the cluster mean. This step is called “cluster assignment step”. After the assignment step, the algorithm computes the new mean value of each cluster. The term cluster “centroid update” is used to design this step. Now that the centers have been recalculated, every observation is checked again to see if it might be closer to a different cluster. All the objects are reassigned again using the updated cluster means. The cluster assignment and centroid update steps are iteratively repeated until the cluster assignments stop changing (i.e until convergence is achieved). That is, the clusters formed in the current iteration are the same as those obtained in the previous iteration.
 
 K-means algorithm can be summarized as follows:
 
-1.Specify the number of clusters (K) to be created (by the analyst)
-2.Select randomly k objects from the data set as the initial cluster centers or means
-3.Assigns each observation to their closest centroid, based on the Euclidean distance between the object and the centroid
-4.For each of the k clusters update the cluster centroid by calculating the new mean values of all the data points in the cluster. The centroid of a Kth cluster is a vector of length p containing the means of all variables for the observations in the kth cluster; p is the number of variables.
-5.Iteratively minimize the total within sum of square. That is, iterate steps 3 and 4 until the cluster assignments stop changing or the maximum number of iterations is reached. By default, the R software uses 10 as the default value for the maximum number of iterations.
+1. Specify the number of clusters (K) to be created (by the analyst)
+2. Select randomly k objects from the data set as the initial cluster centers or means
+3. Assigns each observation to their closest centroid, based on the Euclidean distance between the object and the centroid
+4. For each of the k clusters update the cluster centroid by calculating the new mean values of all the data points in the cluster. The centroid of a Kth cluster is a vector of length p containing the means of all variables for the observations in the kth cluster; p is the number of variables.
+5. Iteratively minimize the total within sum of square. That is, iterate steps 3 and 4 until the cluster assignments stop changing or the maximum number of iterations is reached. By default, the R software uses 10 as the default value for the maximum number of iterations.
 
 **Computing k-means clustering in R**
+
 We can compute k-means in R with the *kmeans* function. Here will group the data into two clusters (*centers = 2*). The *kmeans* function also has an *nstart* option that attempts multiple initial configurations and reports on the best one. For example, adding *nstart = 25* will generate 25 initial configurations. This approach is often recommended.
 
 ```{r}
 k2 <- kmeans(winesNorm, centers = 2, nstart = 25)
 str(k2)
 ```
+
 The output of *kmeans* is a list with several bits of information. The most important being:
 
-+_cluster_: A vector of integers (from 1:k) indicating the cluster to which each point is allocated.
-+_centers_: A matrix of cluster centers.
-+_totss_: The total sum of squares.
-+_withinss_: Vector of within-cluster sum of squares, one component per cluster.
-+_tot.withinss_: Total within-cluster sum of squares, i.e. sum(withinss).
-+_betweenss_: The between-cluster sum of squares, i.e. $totss-tot.withinss$.
-+_size_: The number of points in each cluster.
++ _cluster_: A vector of integers (from 1:k) indicating the cluster to which each point is allocated.
++ _centers_: A matrix of cluster centers.
++ _totss_: The total sum of squares.
++ _withinss_: Vector of within-cluster sum of squares, one component per cluster.
++ _tot.withinss_: Total within-cluster sum of squares, i.e. sum(withinss).
++ _betweenss_: The between-cluster sum of squares, i.e. $totss-tot.withinss$.
++ _size_: The number of points in each cluster.
 
 If we print the results we'll see that our groupings resulted in 2 cluster sizes of 54 and 123. We see the cluster centers (means) for the two groups across the thirteen variables . We also get the cluster assignment for each observation.
 
@@ -170,12 +174,14 @@ k2
 ```
 
 ### Interpretation of Model: 
+
 We can view our results by using *fviz_cluster*. This provides a nice illustration of the clusters. If there are more than two dimensions (variables) *fviz_cluster* will perform principal component analysis (PCA) and plot the data points according to the first two principal components that explain the majority of the variance.
 
 ```{r}
 
 fviz_cluster(k2,data=winesNorm)
 ```
+
 Because the number of clusters (k) must be set before we start the algorithm, it is often advantageous to use several different values of k and examine the differences in the results. We can execute the same process for 3, 4, and 5 clusters, and the results are shown in the figure:
 
 ```{r}
@@ -194,6 +200,7 @@ grid.arrange(p1, p2, p3, p4, nrow = 2)
 
 
 ```
+
 This visual assessment tells us where true delineations occur between clusters; however, it does not tell us what the optimal number of clusters is.
 
   
