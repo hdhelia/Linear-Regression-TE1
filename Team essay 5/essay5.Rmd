@@ -8,7 +8,29 @@ output: html_document
 ## (1) INTRODUCTION
 
 ### Principal Component Analysis and K-means Clustering
+### Principal Component Analysis and K-means Clustering
+**Principal Component**
+Principal component analysis (PCA) is a statistical procedure that helps us summarize the information content in large dataset by means of each smaller group. Its purpose is to capture the covariance information and supply it to the algorithm to build the model.
 
+**K-means Clustering**
+Clustering is a broad set of techniques for finding subgroups of observations within a data set. One of the popular techniques is K-means clustering, which is a commonly used data clustering for performing unsupervised learning task. The purpose of this technique is to split a dataset into a set of k groups and minimize the sum of distances between the points within a cluster with their respective cluster centroid.
+
+There are several k-means algorithms available. The standard algorithm is the Hartigan-Wong algorithm (1979), which defines the total within-cluster variation as the sum of squared distances Euclidean distances between items and the corresponding centroid:
+$$ W(C_k) = \sum_{x \in C_k}(x_i - \mu_k)^2 $$ 
+where: 
+ + *x_i* is a data point belonging to the cluster *C_k*
+ + *\mu_k* is the mean value of the points assigned to the cluster *C_k*
+ 
+Each observation *x_i* is assigned to a given cluster such that the sum of squares (SS) distance of the observation to their assigned cluster centers *\mu_k* is minimized.
+
+The total within-cluster sum of square measures the compactness of the clustering and the smaller it is, the better. The total within-cluster variation formula is:
+$$ Total.withiness = \sum^{k}_{k=1}W(C_k) = \sum^{k}_{k=1}\sum_{x_i \in C_k}(x_i - \mu_k)^2 $$
+
+**K-means Algorithm**
+To start an algorithm, we first choose the number of clusters k, then select k random points from the data as centroids. Once we have defined the centroids, we will assign each point to the closest cluster centroid based on its distance from each cluster mean. The distance is determined by using Euclidean distance formula:
+$$ d_{euc}(xy) = \sqrt{ \sum^{n}_{i=1}(x_i-y_i)^2} $$.
+
+Then we update the cluster centroid by calculating the new mean values of all the data points in the cluster. Now, we have the new means of each centroid and we repeat the previous steps until the clusters formed in the current step are equal to those formed in the previous step.
 
 ### Loading R packages
 
