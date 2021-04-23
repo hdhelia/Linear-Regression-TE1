@@ -90,10 +90,38 @@ summary(BTCN.arch)
 We can check for ARCH effects by using the ArchTest() function from the FinTS package. We will use a significance level of $\alpha=0.05$ for our null hypothesis test.
 
 ```{r}
+byd.archTest <- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
+byd.archTest
+```
+Because the p-value is < 0.05, we reject the null hypothesis and conclude the presence of ARCH(1) effects.
+  
+**Estimating ARCH Models**
+
+We can estimate an ARCH(1) model using the garchFit() function from the fGarch package in R. Specifically, we need to estimate the variance given in equation (1.2c). ARCH models are estiamted using the maximum likelihood method.
+
+```{r}
+arch.fit <- garchFit(~garch(1,0), data = BTCN$Close, trace = F)
+summary(arch.fit)
 
 ```
+Based on the output, the estimated mean of the series is
 
-  
+\[\hat{r}_t=\hat{\beta}_0=19.502\]
+
+and the estimated variance is
+
+\[\hat{h}_t=\hat{\alpha}_0+\hat{\alpha}_1\hat{e}^{2}_{t−1}=13.6063+24.6636=38.2699\]
+
+
+Plotting the conditional variance looks something like
+
+```{r}
+BTCN$ht <- arch.fit@h.t
+ggplot(BTCN, aes(y = ht, x = Date)) + geom_line(col = '#ff9933') + ylab('Conditional Variance') + xlab('Date')
+
+```
+Look at the graph, we can see that Jan and Feb have high volatatility.
+
 ## (4) MODEL EVALUATION
 
 ### Prediction and Model accuracy
