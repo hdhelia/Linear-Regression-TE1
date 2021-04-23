@@ -6,10 +6,8 @@ output: html_document
 ---
 
 ## (1) INTRODUCTION
-
 ### Principal Component Analysis and K-means Clustering
-### Principal Component Analysis and K-means Clustering
-**Principal Component**
+**Principal Component Analysis**
 Principal component analysis (PCA) is a statistical procedure that helps us summarize the information content in large dataset by means of each smaller group. Its purpose is to capture the covariance information and supply it to the algorithm to build the model.
 
 **K-means Clustering**
