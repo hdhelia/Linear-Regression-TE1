@@ -6,25 +6,33 @@ output: html_document
 ---
 
 ## (1) INTRODUCTION
+
 ### Principal Component Analysis and K-means Clustering
+
 **Principal Component Analysis**
+
 Principal component analysis (PCA) is a statistical procedure that helps us summarize the information content in large dataset by means of each smaller group. Its purpose is to capture the covariance information and supply it to the algorithm to build the model.
 
 **K-means Clustering**
-Clustering is a broad set of techniques for finding subgroups of observations within a data set. One of the popular techniques is K-means clustering, which is a commonly used data clustering for performing unsupervised learning task. The purpose of this technique is to split a dataset into a set of k groups and minimize the sum of distances between the points within a cluster with their respective cluster centroid.
+
+K-means clustering is the most commonly used unsupervised machine learning algorithm for partitioning a given data set into a set of k groups (i.e. k clusters), where k represents the number of groups pre-specified by the analyst. It classifies objects in multiple groups (i.e., clusters), such that objects within the same cluster are as similar as possible (i.e., high intra-class similarity), whereas objects from different clusters are as dissimilar as possible (i.e., low inter-class similarity). In k-means clustering, each cluster is represented by its center which corresponds to the mean of points assigned to the cluster. The purpose of this technique is to split a dataset into a set of k groups and minimize the sum of distances between the points within a cluster with their respective cluster centroid.
 
 There are several k-means algorithms available. The standard algorithm is the Hartigan-Wong algorithm (1979), which defines the total within-cluster variation as the sum of squared distances Euclidean distances between items and the corresponding centroid:
+
 $$ W(C_k) = \sum_{x \in C_k}(x_i - \mu_k)^2 $$ 
 where: 
- + *x_i* is a data point belonging to the cluster *C_k*
- + *\mu_k* is the mean value of the points assigned to the cluster *C_k*
+
+ + $x_i$ is a data point belonging to the cluster $C_k$
+ + $\mu_k$ is the mean value of the points assigned to the cluster $C_k$
  
-Each observation *x_i* is assigned to a given cluster such that the sum of squares (SS) distance of the observation to their assigned cluster centers *\mu_k* is minimized.
+Each observation $x_i$ is assigned to a given cluster such that the sum of squares (SS) distance of the observation to their assigned cluster centers $\mu_k$ is minimized.
 
 The total within-cluster sum of square measures the compactness of the clustering and the smaller it is, the better. The total within-cluster variation formula is:
+
 $$ Total.withiness = \sum^{k}_{k=1}W(C_k) = \sum^{k}_{k=1}\sum_{x_i \in C_k}(x_i - \mu_k)^2 $$
 
 **K-means Algorithm**
+
 To start an algorithm, we first choose the number of clusters k, then select k random points from the data as centroids. Once we have defined the centroids, we will assign each point to the closest cluster centroid based on its distance from each cluster mean. The distance is determined by using Euclidean distance formula:
 $$ d_{euc}(xy) = \sqrt{ \sum^{n}_{i=1}(x_i-y_i)^2} $$.
 
@@ -58,14 +66,14 @@ These data are the results of a chemical analysis of wines grown in the same reg
 5) Magnesium
 6) Total phenols
 7) Flavanoids
-8) Nonflavanoid phenols
+8) Non-flavanoid phenols
 9) Proanthocyanins
 10) Color intensity
 11) Hue
 12) OD280/OD315 of diluted wines
 13) Proline
 
-*Our goal is to try to group similar observations together and determine the number of possible clusters.*
+*Our goal is to try to group wines with similar characteristics together and determine the number of possible clusters.  This would help us make predictions and reduce dimensionality.*
 
 **Importing the data file**
 
@@ -86,19 +94,19 @@ summary(wine)
 
 First we plot the histogram of each attribute. The idea here is to visualize the data distribution for each feature.
 
-```{r}
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
 # Histogram for each Attribute
 wine %>%
   gather(Attributes, value, 1:13) %>%
   ggplot(aes(x=value, fill=Attributes)) +
-  geom_histogram(colour="black", show.legend=FALSE) +
+  geom_histogram(bins= 30, colour="black", show.legend=FALSE) +
   facet_wrap(~Attributes, scales="free_x") +
   labs(x="Values", y="Frequency",
        title="Wines Attributes - Histograms") +
   theme_bw()
 ```
 
-```{r}
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
 wine %>%
   gather(Attributes, values) %>%
   ggplot(aes(x=reorder(Attributes, values, FUN=median), y=values, fill=Attributes)) +
@@ -110,13 +118,16 @@ wine %>%
         axis.title.x=element_blank()) 
 ```
 
-```{r}
+Below we plot a correlation plot and find a strong linear correlation between Total_Phenols and Flavanoids & OD280 and Flavanoids.
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
 ggcorr(wine,
     nbreaks = 10,
     label = TRUE,
     label_size = 3,
     color = "grey50")
 ```
+
 
 
 **Data Normalization**
@@ -133,39 +144,14 @@ summary(winesNorm)
 
 ### Computation
 
-**K-Means Clustering**
-
-K-means clustering is the most commonly used unsupervised machine learning algorithm for partitioning a given data set into a set of k groups (i.e. k clusters), where k represents the number of groups pre-specified by the analyst. It classifies objects in multiple groups (i.e., clusters), such that objects within the same cluster are as similar as possible (i.e., high intra-class similarity), whereas objects from different clusters are as dissimilar as possible (i.e., low inter-class similarity). In k-means clustering, each cluster is represented by its center which corresponds to the mean of points assigned to the cluster.
-
-**The Basic Idea**
-
-The basic idea behind k-means clustering consists of defining clusters so that the total intra-cluster variation (known as total within-cluster variation) is minimized. There are several k-means algorithms available. The standard algorithm is the Hartigan-Wong algorithm (1979), which defines the total within-cluster variation as the sum of squared distances Euclidean distances between items and the corresponding centroid:
-\[
-W(C_k) = \sum_{x_i \in C_k}(x_i - \mu_k)^2 \tag{6}
-\]
-
-where:
-+ $x_i$ is a data point belonging to the cluster $C_k$
-+ $\mu_k$ is the mean value of the points assigned to the cluster $C_k$
-
-Each observation ($xi$) is assigned to a given cluster such that the sum of squares (SS) distance of the observation to their assigned cluster centers ($\mu_k$) is minimized.
-
-We define the total within-cluster variation as follows:
-\[
-tot.withiness = \sum^k_{k=1}W(C_k) = \sum^k_{k=1}\sum_{x_i \in C_k}(x_i - \mu_k)^2 \tag{7}
-\]
-The total within-cluster sum of square measures the compactness of the clustering and we want it to be as small as possible.
-
 **K-means Algorithm**
-
-The first step when using k-means clustering is to indicate the number of clusters (k) that will be generated in the final solution. The algorithm starts by randomly selecting k objects from the data set to serve as the initial centers for the clusters. The selected objects are also known as cluster means or centroids. Next, each of the remaining objects is assigned to it's closest centroid, where closest is defined using the Euclidean distance between the object and the cluster mean. This step is called “cluster assignment step”. After the assignment step, the algorithm computes the new mean value of each cluster. The term cluster “centroid update” is used to design this step. Now that the centers have been recalculated, every observation is checked again to see if it might be closer to a different cluster. All the objects are reassigned again using the updated cluster means. The cluster assignment and centroid update steps are iteratively repeated until the cluster assignments stop changing (i.e until convergence is achieved). That is, the clusters formed in the current iteration are the same as those obtained in the previous iteration.
 
 K-means algorithm can be summarized as follows:
 
 1. Specify the number of clusters (K) to be created (by the analyst)
 2. Select randomly k objects from the data set as the initial cluster centers or means
-3. Assigns each observation to their closest centroid, based on the Euclidean distance between the object and the centroid
-4. For each of the k clusters update the cluster centroid by calculating the new mean values of all the data points in the cluster. The centroid of a Kth cluster is a vector of length p containing the means of all variables for the observations in the kth cluster; p is the number of variables.
+3. Cluster assignment step: Assigns each observation to their closest centroid, based on the Euclidean distance between the object and the centroid
+4. Cluster centroid update: For each of the k clusters update the cluster centroid by calculating the new mean values of all the data points in the cluster. The centroid of a Kth cluster is a vector of length p containing the means of all variables for the observations in the kth cluster; p is the number of variables.
 5. Iteratively minimize the total within sum of square. That is, iterate steps 3 and 4 until the cluster assignments stop changing or the maximum number of iterations is reached. By default, the R software uses 10 as the default value for the maximum number of iterations.
 
 **Computing k-means clustering in R**
@@ -182,9 +168,9 @@ The output of *kmeans* is a list with several bits of information. The most impo
 + _cluster_: A vector of integers (from 1:k) indicating the cluster to which each point is allocated.
 + _centers_: A matrix of cluster centers.
 + _totss_: The total sum of squares.
-+ _withinss_: Vector of within-cluster sum of squares, one component per cluster.
-+ _tot.withinss_: Total within-cluster sum of squares, i.e. sum(withinss).
-+ _betweenss_: The between-cluster sum of squares, i.e. $totss-tot.withinss$.
++ _withinss_: Vector of within-cluster sum of squares, one component per cluster.  In an optimal segmentation, one expects this ratio to be as lower as possible for each cluster, since we would like to have homogeneity within the clusters.
++ _tot.withinss_: Total within-cluster sum of squares, i.e. sum(withinss). It measures the compactness (i.e goodness) of the clustering and we want it to be as small as possible.
++ _betweenss_: The between-cluster sum of squares, i.e. $totss-tot.withinss$. The between-cluster sum of squares. In an optimal segmentation, one expects this ratio to be as higher as possible, since we would like to have heterogeneous clusters.
 + _size_: The number of points in each cluster.
 
 If we print the results we'll see that our groupings resulted in 2 cluster sizes of 54 and 123. We see the cluster centers (means) for the two groups across the thirteen variables . We also get the cluster assignment for each observation.
@@ -198,13 +184,12 @@ k2
 We can view our results by using *fviz_cluster*. This provides a nice illustration of the clusters. If there are more than two dimensions (variables) *fviz_cluster* will perform principal component analysis (PCA) and plot the data points according to the first two principal components that explain the majority of the variance.
 
 ```{r}
-
 fviz_cluster(k2,data=winesNorm)
 ```
 
 Because the number of clusters (k) must be set before we start the algorithm, it is often advantageous to use several different values of k and examine the differences in the results. We can execute the same process for 3, 4, and 5 clusters, and the results are shown in the figure:
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 k3 <- kmeans(winesNorm, centers = 3, nstart = 25)
 k4 <- kmeans(winesNorm, centers = 4, nstart = 25)
 k5 <- kmeans(winesNorm, centers = 5, nstart = 25)
@@ -217,12 +202,9 @@ p4 <- fviz_cluster(k5, geom = "point",  data = winesNorm) + ggtitle("k = 5")
 
 library(gridExtra)
 grid.arrange(p1, p2, p3, p4, nrow = 2)
-
-
 ```
 
-This visual assessment tells us where true delineations occur between clusters; however, it does not tell us what the optimal number of clusters is.
-
+This visual assessment tells us where true delineations occur between clusters; however, it does not tell us what the optimal number of clusters is. To determine that we will look at a few different ways in the next section.
   
 ## (4) MODEL EVALUATION
 
@@ -238,7 +220,7 @@ In the next section, we will discuss about the optimal value of 'k' that will he
 
 To calculate the optimal value of 'k', we will perform the following 'Elbow method' : 
 
-1. Compute clustering algorithm (e.g., k-means clustering) for different values of k. For instance, by varying k from 1 to 10 clusters
+1. Compute clustering algorithm (e.g., k-means clustering) for different values of k. For instance, by varying k from 1 to 15 clusters.
 2. For each k, calculate the total within-cluster sum of square (wss)
 3. Plot the curve of wss according to the number of clusters k.
 4. The location of a bend (knee) in the plot is generally considered as an indicator of the appropriate number of clusters.
@@ -261,28 +243,65 @@ plot(k.values, wss_values,
        type="b", pch = 19, frame = FALSE, 
        xlab="Number of clusters K",
        ylab="Total within-clusters sum of squares")
+
+#  we use the wrapper function **fviz_nbclust()** that computes the 'Elbow method' 
+# using just one line of code. We can see the knee (bend) in the plot being at k=3. 
+
+# set.seed(123)
+# 
+# fviz_nbclust(winesNorm, kmeans, method = "wss")
 ```
 
-Looking at the plot above, we can see that **k=3 is the optimal value of k**. Hence, for our essay we will be using k=3 (3-means clustering method) to cluster similar chemically similar wines together based on the initial data set. 
+Looking at the plot above, we can see that **k=3 is the optimal value of k** since from this point onwards the total WCSS (Within Cluster Sum of Squares) doesn’t decrease significantly. Hence, for our essay we will be using k=3 (3-means clustering method) to cluster similar chemically similar wines together based on the initial data set. 
 
-Just to confirm it using another plot, we use the wrapper function **fviz_nbclust()** that computes the 'Elbow method' using just one line of code. We can see the knee (bend) in the plot being at k=3. 
+**Gap Statistic**
 
+We can also use the Gap statistic measure to determine the optimal k value. he gap statistic compares the total intracluster variation for different values of k with their expected values under null reference distribution of the data (i.e. a distribution with no obvious clustering).
 
-```{r}
+To compute the gap statistic method we can use the `clusGap` function which provides the gap statistic and standard error for an output. We can visualize the results with fviz_gap_stat which also suggests 3 as the optimal number of clusters.
+
+```{r, warning=FALSE, message=FALSE}
 set.seed(123)
+gap_stat <- clusGap(winesNorm, FUN = kmeans, nstart = 25,
+                    K.max = 10, B = 50)
 
-fviz_nbclust(winesNorm, kmeans, method = "wss")
+fviz_gap_stat(gap_stat)
 ```
 
-Finally, just to visualize the case where k=3, we get the following clustering using our data set. 
+Finally, just to visualize the case where k=3, we get the following clustering using our data set.
 
 ```{r}
-k2 <- kmeans(winesNorm, centers = 3, nstart = 25)
-
-k2
+k3 <- kmeans(winesNorm, centers = 3, nstart = 25)
 
 fviz_cluster(k2, data = winesNorm)
 ```
+
+Finally, we can extract the clusters and add to our initial data to do some descriptive statistics at the cluster level:
+
+```{r}
+wine %>%
+  mutate(Cluster = k3$cluster) %>%
+  group_by(Cluster) %>%
+  summarise_all("mean")
+```
+
+Below we can visualize the difference between the attributes under each cluster, we use Flavanoids and OD280 as examples for visualization:
+
+```{r}
+wine_cluster <- wine %>%
+  mutate(Cluster = k3$cluster)
+
+wine_cluster %>%
+  ggplot(aes(x=Flavanoids, color = Cluster)) +
+  geom_histogram(color="black", fill="red") +
+  facet_wrap(~Cluster)
+
+wine_cluster %>%
+  ggplot(aes(x=OD280, color = Cluster)) +
+  geom_histogram(color="black", fill="red") +
+  facet_wrap(~Cluster)
+```
+
 
 ## (5) CONCLUSION
 
@@ -301,22 +320,3 @@ https://www.kaggle.com/rodrigofragoso/explained-k-means-pca-visualization
 https://uc-r.github.io/kmeans_clustering
 
 https://www.guru99.com/r-k-means-clustering.html
-
-
-
-
-```{r}
-distance <- get_dist(winesNorm) 
-fviz_dist(distance, gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) + 
-  theme(
-    axis.ticks.x = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.text.y = element_blank()
-  )
-```
-
-
-
-
-
