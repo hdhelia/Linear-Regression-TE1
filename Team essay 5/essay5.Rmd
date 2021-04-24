@@ -1,7 +1,7 @@
 ---
 title: 'Essay 5: Principal Component Analysis and Clustering'
 author: "Dhruvi, Vi, Huy, Harshal"
-date: "4/23/2021"
+date: "4/24/2021"
 output: html_document
 ---
 
@@ -281,7 +281,7 @@ Finally, we can extract the clusters and add to our initial data to do some desc
 
 ```{r}
 wine %>%
-  mutate(Cluster = k3$cluster) %>%
+  mutate(Cluster = as.factor(k3$cluster)) %>%
   group_by(Cluster) %>%
   summarise_all("mean")
 ```
@@ -303,12 +303,22 @@ wine_cluster %>%
   facet_wrap(~Cluster)
 ```
 
+Below we can visualize the densities of each cluster within each attribute and how they differ. 
+
+```{r, warning=FALSE, message=FALSE}
+ggpairs(cbind(wine, Cluster=as.factor(k3$cluster)),
+        columns=1:6, aes(colour=Cluster, alpha=0.5),
+        lower=list(continuous="points"),
+        upper=list(continuous="blank"),
+        axisLabels="none", switch="both") +
+        theme_bw()
+```
 
 ## (5) CONCLUSION
 
 ### Summary
 
-In this article we perform unsupervised learning through k-means clustering on the wine data set consisting of 13 attributes. We first do madel analysis and try to determine how many clusters we should pick by try out different values of k. We determined that k=3 works the best. So we define 3 centroids which are determined recursively until no more chnages are observed and we group each data points to a given cluster by calculating the distance between the data point and the centroids of the cluster, assigning it to the one with the smallest distance. 
+In this article we perform unsupervised learning through k-means clustering on the wine data set consisting of 13 attributes. We first do madel analysis and try to determine how many clusters we should pick by try out different values of k. We determined that k=3 works the best. So we define 3 centroids which are determined recursively until no more changes are observed and we group each data point to a given cluster by calculating the distance between the data point and the centroids of the cluster, assigning it to the one with the smallest distance. 
 Finally, we do a model evaluation to confirm which value of k is the most optimal through the 'Elbow Method' and 'Gap statistic' plots which confirm that k=3 is indeed the most optimal. We also visualize the clusters and the difference of the attributes under each cluster.
 
 K-means clustering is a simple and fast algorithm. It is also quite efficient for larger datasets; however, it has a few shortcomings:
