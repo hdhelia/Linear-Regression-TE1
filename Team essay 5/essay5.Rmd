@@ -79,7 +79,8 @@ These data are the results of a chemical analysis of wines grown in the same reg
 
 ```{r, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
 
-wine.cols = c("Alcohol", "Malic_Acid", "Ash", "Ash_Alcanity", "magnesium", "Total_Phenols", "Flavanoids",	"Nonflavanoid_Phenols", "Proanthocyanins", "Color_Intensity", "Hue", "OD280", "Proline")
+wine.cols = c("Alcohol", "Malic_Acid", "Ash", "Ash_Alcanity", "magnesium", "Total_Phenols", "Flavanoids",	
+              "Nonflavanoid_Phenols", "Proanthocyanins", "Color_Intensity", "Hue", "OD280", "Proline")
 
 wine <- read.table("wine.data", sep = ",", row.names=NULL, col.names=wine.cols, nrows=178)[ ,2:14]
 
@@ -92,7 +93,7 @@ summary(wine)
 
 ### Visualization
 
-First we plot the histogram of each attribute. The idea here is to visualize the data distribution for each feature.
+First we plot the histogram of each attribute. The idea here is to visualize the data distribution for each feature. This helps in determining in comparing how the atrributes are disttributed under each cluster as compared to the distribution prior. We notice, for example, that that Alcohol contents are more evenly distributed however, for Ash it follows a perfect bell curve. Malc acid, OD280 and proline are more skewed and don't follow an even distribution.
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 # Histogram for each Attribute
@@ -106,6 +107,8 @@ wine %>%
   theme_bw()
 ```
 
+The above noted observations can be confirmed through the boxplot below which helps visualize the skewness of data in the corresponding attributes clearly by looking where the horizontal line, representing the mean, lies within the boxplot. 
+
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 wine %>%
   gather(Attributes, values) %>%
@@ -118,7 +121,7 @@ wine %>%
         axis.title.x=element_blank()) 
 ```
 
-Below we plot a correlation plot and find a strong linear correlation between Total_Phenols and Flavanoids & OD280 and Flavanoids.
+Below we plot a correlation plot to see how each attribute is correlated. We find a strong linear correlation between Total_Phenols and Flavanoids & OD280 and Flavanoids. This could turn out to be useful when we try to make predictions about what each charcateristic value should be for a given wine across different clusters if we know the value of one of the attributes.
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
 ggcorr(wine,
@@ -127,8 +130,6 @@ ggcorr(wine,
     label_size = 3,
     color = "grey50")
 ```
-
-
 
 **Data Normalization**
 
@@ -204,7 +205,7 @@ library(gridExtra)
 grid.arrange(p1, p2, p3, p4, nrow = 2)
 ```
 
-This visual assessment tells us where true delineations occur between clusters; however, it does not tell us what the optimal number of clusters is. To determine that we will look at a few different ways in the next section.
+This visual assessment tells us where true delineations occur between clusters; however, it does not tell us what the optimal number of clusters is. To determine that we will look at a few different ways in the next section. However, what you can see from the cluster visualization above that k=2 and k=3 are the only values with the minimal cross-section of the clusters. Each data point in those clusters strictly falls under one cateegory or the other and isn't ambiguous.
   
 ## (4) MODEL EVALUATION
 
@@ -272,8 +273,8 @@ Finally, just to visualize the case where k=3, we get the following clustering u
 
 ```{r}
 k3 <- kmeans(winesNorm, centers = 3, nstart = 25)
-
-fviz_cluster(k2, data = winesNorm)
+k3
+fviz_cluster(k3, data = winesNorm)
 ```
 
 Finally, we can extract the clusters and add to our initial data to do some descriptive statistics at the cluster level:
@@ -307,7 +308,15 @@ wine_cluster %>%
 
 ### Summary
 
+In this article we perform unsupervised learning through k-means clustering on the wine data set consisting of 13 attributes. We first do madel analysis and try to determine how many clusters we should pick by try out different values of k. We determined that k=3 works the best. So we define 3 centroids which are determined recursively until no more chnages are observed and we group each data points to a given cluster by calculating the distance between the data point and the centroids of the cluster, assigning it to the one with the smallest distance. 
+Finally, we do a model evaluation to confirm which value of k is the most optimal through the 'Elbow Method' and 'Gap statistic' plots which confirm that k=3 is indeed the most optimal. We also visualize the clusters and the difference of the attributes under each cluster.
 
+K-means clustering is a simple and fast algorithm. It is also quite efficient for larger datasets; however, it has a few shortcomings:
+
+- It assumes prior knowledge of the data and requires the analyst to choose the appropriate number of cluster (k) in advance
+- The final results obtained is sensitive to the initial random selection of cluster centers. Why is it a problem? Because, for every different run of the algorithm on the same dataset, you may choose different set of initial centers. This may lead to different clustering results on different runs of the algorithm.
+- It’s sensitive to outliers.
+- If you rearrange your data, it’s very possible that you’ll get a different solution every time you change the ordering of your data.
 
 ## (6) REFERENCES
 
