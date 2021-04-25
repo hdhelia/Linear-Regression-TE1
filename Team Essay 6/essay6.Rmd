@@ -126,6 +126,19 @@ Look at the graph, we can see that Jan and Feb have high volatatility.
 
 ### Prediction and Model accuracy
 
+In order to predict the stock prices of the Bitcoin in USD using our model. We use the **GARCH prediction function predict()**. 
+It takes in the following parameters : 
+
+1. object (arch.fit) : an object of class fGARCH as returned by the function garchFit. 
+2. n.ahead (2) : an integer value, denoting the number of steps to be forecasted, by default 10. 
+3. mse (cond) : If set to "cond", it states the it has conditional mean errors.
+4. plot (T) : When set to "True", the confidence levels are computed and plotted. 
+
+```{r}
+
+predict(arch.fit, n.ahead = 5, mse ="cond", plot = T)
+
+```
 
 ## (5) CONCLUSION
 
