@@ -8,7 +8,39 @@ output: html_document
 ## (1) INTRODUCTION
 
 ### ARCH modeling 
+**ARCH** models stands for Auto-Regressive Conditional Heteroskedasticity, which works with time-varying variances that relies on lagged effects. Basically, **ARCH** often deals with stationary (time-invariant mean) and non-stationary (time-varying mean) variables. This model has gain popularity in finance as a way to model the changes in the volatility of asset returns.
 
+Consider the auto-regressive AR(1) model:
+$$Y_t = \phi + e_t  \qquad [1] \\ 
+e_t|I_{t-1} \sim N(0,h_t)  \qquad[2] \\
+h_t = \alpha_0 + \alpha_1e^2_{t-1}, \quad a_0 > 0, \quad 0 \leq \alpha_1 < 1 \quad [3]$$ 
+Equation [1] is described as **the mean equation** while equation [2] and [3] present the autoregressive conditional heteroskedastic class of models.
+
+To test for ARCH effects in a time series in both test model and hypotheses, we use a Langrange multiplier (LM) test to test for the presence of ARCH effects:
+$$ \hat{e}^2_t = \gamma_0 + \gamma_1\hat{e}^2_{t-1} +...+ \gamma_q\hat{e}^2_{t-q} + \nu
+$$
+in which:
+  + $\hat{e}_t$: the estimated residuals
+  + $\hat{e}^2_{t-1}$: the squared residuals lagged
+  + $\chi_t$: a random error term
+
+and the null and alternative hypotheses are:
+$$H_0 : \gamma_1 = ... =  \gamma_q \quad ; \quad H_A :  \gamma_1 \ne or ... \gamma_q \ne 0$$
+
+If there are no ARCH effects, the $\gamma_1 = 0$ and the fit of the mean equation will be poor, and the equation $R^2$ will be low. Otherwise, if there exists ARCH effects, then $|\hat{e}^2_t|$ depends on its lagged value and $R^2$ is relatively high.
+
+The LM test statistic is:
+$$(T-q)R^2 \sim \chi^2_{1-\alpha,q}$$
+in which:
+  + *T*: the sample size
+  + *q*: the order of lag
+  + $R^2$ is distributed as $\chi^2_{(q)}$
+
+If $(T-q)R^2 \geq \chi^2_{1-\alpha,q}$, then we reject the null hypothesis that $\gamma_1 = 0$ and conclude that ARCH effects are present.
+
+
+### Our project 
+To be more precise, our project will apply ARCH models in a real-time example that we found in Yahoo source. We are now using the dataset *BTC-USD*, which contains 109 observations, to measure the volatility in the Bitcoin USD time-series data.
 
 ### Loading R packages
 
