@@ -1,19 +1,15 @@
 ---
-title: 'Essay 5: Principal Component Analysis and Clustering'
+title: 'Essay 5: K-means Clustering'
 author: "Dhruvi, Vi, Huy, Harshal"
 date: "4/24/2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ## (1) INTRODUCTION
 
-### Principal Component Analysis and K-means Clustering
-
-**Principal Component Analysis**
-
-Principal component analysis (PCA) is a statistical procedure that helps us summarize the information content in large dataset by means of each smaller group. Its purpose is to capture the covariance information and supply it to the algorithm to build the model.
-
-**K-means Clustering**
+### K-means Clustering
 
 K-means clustering is the most commonly used unsupervised machine learning algorithm for partitioning a given data set into a set of k groups (i.e. k clusters), where k represents the number of groups pre-specified by the analyst. It classifies objects in multiple groups (i.e., clusters), such that objects within the same cluster are as similar as possible (i.e., high intra-class similarity), whereas objects from different clusters are as dissimilar as possible (i.e., low inter-class similarity). In k-means clustering, each cluster is represented by its center which corresponds to the mean of points assigned to the cluster. The purpose of this technique is to split a dataset into a set of k groups and minimize the sum of distances between the points within a cluster with their respective cluster centroid.
 

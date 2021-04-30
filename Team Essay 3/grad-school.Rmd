@@ -13,7 +13,7 @@ output:
 
 Logistic regression is used to predict a class, i.e., a probability. Logistic regression can predict a binary outcome accurately.
 
-Imagine you want to predict whether one would get admitted into grad school like UCLA based on many attributes. The logistic regression is of the form 0/1. y = 0 if she desires more children, y = 1 if she doesn't.
+Imagine you want to predict whether one would get admitted into grad school like UCLA based on many attributes. The logistic regression is of the form 0/1. y = 0 if one gets rejected, y = 1 if accepted.
 
 A logistic regression model differs from linear regression model in two ways.
 
@@ -127,7 +127,7 @@ ggplot(admit_drop, aes(x = gre)) +
 
 You can standardize each column to improve the performance because your data does not have the same scale. Mutate the numeric colums and then scale them.
 
-This was the originalchoice however it made eading the data and fraphs a little harder with the standardized scales so we reverted to the original non-standardized values.
+This was the original choice however, it made reading the data and graphs a little harder with the standardized scales so we reverted to the original non-standardized values.
 
 ```{r}
 admit_rescale <- admit_drop
@@ -229,6 +229,7 @@ ggarrange(gre_line, gpa_line,
 ```
 
 We created a linear regression model comparing gre and gpa and their impact on admittance. We observe three things from this plot:
+
   1. The line displaying admittance shows that GPA and GRE tend to be higher than no admittance. 
   2. Regardless of admittance, GRE and GPA tend to be positively correlated meaning the higher the GPA, the higher the GRE tends to be for individuals.
   3. It can also be observed that individuals with low gpa scores, higher GRE scores can increase your chances of admittance. 

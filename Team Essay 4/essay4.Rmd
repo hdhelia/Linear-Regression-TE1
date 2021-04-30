@@ -3,8 +3,8 @@ title: 'Essay 4: KNN and Decision trees'
 author: "Dhruvi, Vi, Huy, Harshal"
 date: "4/16/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ## (1) INTRODUCTION
@@ -251,6 +251,7 @@ D <- iris %>%
 ggarrange(C, D,
           ncol = 2, nrow = 1)
 ```
+
 Sepal width and length appear to be correlated but each species is different. Specifically, there’s a lot of overlap between the versicolor and virginica species. The virginica sepal length seems to be a bit longer but otherwise there's quite a lot of overlap.
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
