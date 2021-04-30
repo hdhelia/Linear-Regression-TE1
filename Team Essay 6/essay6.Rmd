@@ -121,8 +121,8 @@ summary(BTCN.arch)
 We can check for ARCH effects by using the ArchTest() function from the FinTS package. We will use a significance level of $\alpha=0.05$ for our null hypothesis test.
 
 ```{r}
-byd.archTest <- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
-byd.archTest
+btcn.archTest <- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
+btcn.archTest
 ```
 
 Because the p-value is < 0.05, we reject the null hypothesis and conclude the presence of ARCH(1) effects.
@@ -176,7 +176,18 @@ predict(arch.fit, n.ahead = 5, mse ="cond", plot = T)
 
 ### Summary
 
+The ARCH model is a common statistical model  for time series analysis and is widely used in economics and finance. It describes the variance of a temporal variable, and if the conditional variance of this variable has some correlation with itself (in the past), then we say there exists an ARCH effect.
 
+Here in our essay, we have investigated the volatility of Bitcoin (BTC) from January 2021 to the present (April 19th). We apply the Generalized ARCH model (GARCH) in this real-time real-life example from the Yahoo finance source. 
+
+- We first performed the ArchTest from our R package to check for ARCH effects; with a very small p-value we confirmed that our time series exhibits the ARCH effect. 
+- Next we fitted an ARCH model by estimating the variance in our time series (in reference to equation 1.2c in the beginning of the essay). The ARCH model is mathematically estimated using maximum likelihood estimate (MLE), but here we were able to conveniently use the `garchFit()` function in R. 
+- To evaluate our model, we used the package function fGARCH to predict the volatility of Bitcoin (according to the BTC-USD price) for the next 5 temporal steps. 
+  - We visualized the prediction with confidence intervals, and from the forecasting we can see that the model does predict very high volatity, judging by the large predicted standard deviation and gaps between the lower and upper intervals.
+  
+In terms of our BTC-USD dataset, we observed that Bitcoin, as a decentralized currency, is highly volatile and the value can rise or drop very quickly over a short amount of time.  Given the previous bitcoin values, the future values are very difficult to predict due to this high volatility and conditional variance, as the ARCH model indicates.
+
+Overall the ARCH model is mathematically explainable and a very powerful tool to model financial time series.
 
 ## (6) REFERENCES
 
@@ -187,4 +198,3 @@ predict(arch.fit, n.ahead = 5, mse ="cond", plot = T)
  https://rpubs.com/cyobero/arch
  
  https://bookdown.org/ccolonescu/RPoE4/time-varying-volatility-and-arch-models.html
- 

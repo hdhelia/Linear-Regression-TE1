@@ -460,8 +460,8 @@ summary(BTCN.arch)</code></pre>
 ## Multiple R-squared:  0.7961, Adjusted R-squared:  0.7942 
 ## F-statistic: 413.8 on 1 and 106 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>We can check for ARCH effects by using the ArchTest() function from the FinTS package. We will use a significance level of <span class="math inline">\(\alpha=0.05\)</span> for our null hypothesis test.</p>
-<pre class="r"><code>byd.archTest &lt;- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
-byd.archTest</code></pre>
+<pre class="r"><code>btcn.archTest &lt;- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
+btcn.archTest</code></pre>
 <pre><code>## 
 ##  ARCH LM-test; Null hypothesis: no ARCH effects
 ## 
@@ -483,7 +483,7 @@ byd.archTest</code></pre>
 ## 
 ## Mean and Variance Equation:
 ##  data ~ garch(1, 0)
-## &lt;environment: 0x0000000018c07c20&gt;
+## &lt;environment: 0x0000000018c0fbe8&gt;
 ##  [data = BTCN$Close]
 ## 
 ## Conditional Distribution:
@@ -508,7 +508,7 @@ byd.archTest</code></pre>
 ##  -1121.925    normalized:  -10.29289 
 ## 
 ## Description:
-##  Thu Apr 29 23:48:57 2021 by user: dhruv 
+##  Fri Apr 30 00:50:11 2021 by user: dhruv 
 ## 
 ## 
 ## Standardised Residuals Tests:
@@ -562,6 +562,18 @@ ggplot(BTCN, aes(y = ht, x = Date)) + geom_line(col = &#39;#ff9933&#39;) + ylab(
 <h2>(5) CONCLUSION</h2>
 <div id="summary" class="section level3">
 <h3>Summary</h3>
+<p>The ARCH model is a common statistical model for time series analysis and is widely used in economics and finance. It describes the variance of a temporal variable, and if the conditional variance of this variable has some correlation with itself (in the past), then we say there exists an ARCH effect.</p>
+<p>Here in our essay, we have investigated the volatility of Bitcoin (BTC) from January 2021 to the present (April 19th). We apply the Generalized ARCH model (GARCH) in this real-time real-life example from the Yahoo finance source.</p>
+<ul>
+<li>We first performed the ArchTest from our R package to check for ARCH effects; with a very small p-value we confirmed that our time series exhibits the ARCH effect.</li>
+<li>Next we fitted an ARCH model by estimating the variance in our time series (in reference to equation 1.2c in the beginning of the essay). The ARCH model is mathematically estimated using maximum likelihood estimate (MLE), but here we were able to conveniently use the <code>garchFit()</code> function in R.</li>
+<li>To evaluate our model, we used the package function fGARCH to predict the volatility of Bitcoin (according to the BTC-USD price) for the next 5 temporal steps.
+<ul>
+<li>We visualized the prediction with confidence intervals, and from the forecasting we can see that the model does predict very high volatity, judging by the large predicted standard deviation and gaps between the lower and upper intervals.</li>
+</ul></li>
+</ul>
+<p>In terms of our BTC-USD dataset, we observed that Bitcoin, as a decentralized currency, is highly volatile and the value can rise or drop very quickly over a short amount of time. Given the previous bitcoin values, the future values are very difficult to predict due to this high volatility and conditional variance, as the ARCH model indicates.</p>
+<p>Overall the ARCH model is mathematically explainable and a very powerful tool to model financial time series.</p>
 </div>
 </div>
 <div id="references" class="section level2">
