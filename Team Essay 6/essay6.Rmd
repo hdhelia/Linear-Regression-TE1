@@ -95,7 +95,6 @@ ggplot(BTCN, aes(y = Close, x = Date)) + geom_line(col = 'red') +
 hist(BTCN$Close, main="", breaks=20, freq=FALSE, col="grey", xlab = "closing price") 
 ```
 
-
 ## (3) ANALYSIS
 
 ### Computation of ARCH 1 model
@@ -125,6 +124,7 @@ We can check for ARCH effects by using the ArchTest() function from the FinTS pa
 byd.archTest <- ArchTest(BTCN$Close, lags = 1, demean = TRUE)
 byd.archTest
 ```
+
 Because the p-value is < 0.05, we reject the null hypothesis and conclude the presence of ARCH(1) effects.
   
 **Estimating ARCH Models**
@@ -136,6 +136,7 @@ arch.fit <- garchFit(~garch(1,0), data = BTCN$Close, trace = F)
 summary(arch.fit)
 
 ```
+
 Based on the output, the estimated mean of the series is
 
 \[\hat{r}_t=\hat{\beta}_0=19.502\]
@@ -152,7 +153,8 @@ BTCN$ht <- arch.fit@h.t
 ggplot(BTCN, aes(y = ht, x = Date)) + geom_line(col = '#ff9933') + ylab('Conditional Variance') + xlab('Date')
 
 ```
-Look at the graph, we can see that Jan and Feb have high volatatility.
+
+Look at the graph, we can see that Jan and Feb have high volatility.
 
 ## (4) MODEL EVALUATION
 
@@ -167,9 +169,7 @@ It takes in the following parameters :
 4. plot (T) : When set to "True", the confidence levels are computed and plotted. 
 
 ```{r}
-
 predict(arch.fit, n.ahead = 5, mse ="cond", plot = T)
-
 ```
 
 ## (5) CONCLUSION
